@@ -22,7 +22,7 @@ The middle weeks built out ingestion across all six sources — and the schema t
 
 ## Stage 4 — The clock question (June → August)
 
-A Cloudflare Worker drove the intraday dispatches from week one; GitHub's native cron was never trusted with time-sensitive lanes. In late August, before handing the official-writer lane to scheduled cloud infrastructure, I measured bare GitHub cron on a production workflow: more than half the scheduled fires never happened ([case study #2](TECHNICAL_CASE_STUDY.md#2-scheduling-on-infrastructure-that-misses-half-its-alarms) has the numbers). The measurement justified finishing the migration — the Worker became the platform's single timing authority, with slot-identity dispatch and exactly-once dedupe, and jobs became delay-invariant by deriving work from the schedule slot rather than the wall clock.
+A Cloudflare Worker drove the intraday dispatches from week one; GitHub's native cron was never trusted with time-sensitive lanes. In late August, before handing the official-writer lane to scheduled cloud infrastructure, I measured bare GitHub cron on a production workflow: more than half the scheduled fires never happened ([case study #2](TECHNICAL_CASE_STUDY.md#2-scheduling-on-infrastructure-that-misses-half-its-alarms) has the numbers). The measurement justified finishing the migration — the Worker became the platform's primary timing authority, with slot-identity dispatch and duplicate-reducing guards, while each workflow kept its GitHub cron as an offset backup (so execution is at-least-once, and idempotent writes absorb a doubled slot). Jobs became delay-invariant by deriving work from the schedule slot rather than the wall clock.
 
 ## Stage 5 — The V3 product (July 20)
 
@@ -43,7 +43,7 @@ The month of fences, each one installed after a specific failure:
 
 ## Stage 8 — Full cloud operation (September)
 
-The official forecast writer — the one component still running on a local machine — cut over to cloud execution: a SHA-pinned workflow with a code-identity preflight that refuses to publish on checkout divergence, and fail-loud liveness and coverage verification after every publish chain. The local path was demoted to a documented emergency fallback. Alongside it, the public **Model History** page began grading the engine in the open (521–438 on 959 picks at time of writing, under the "compare the records, not just the percentages" doctrine), and new content systems entered development under the same contract-first discipline.
+The official forecast writer — the one component still running on a local machine — cut over to cloud execution: a SHA-pinned workflow with a code-identity preflight that refuses to publish on checkout divergence, and fail-loud liveness and coverage verification after every publish chain. The local path was demoted to a documented emergency fallback. Alongside it, the public **Model History** page began grading the engine in the open (524–450 on 974 picks, snapshot September 2, 2026, under the "compare the records, not just the percentages" doctrine), and new content systems entered development under the same contract-first discipline.
 
 ## What the arc shows
 

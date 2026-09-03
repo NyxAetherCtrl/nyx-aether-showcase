@@ -1,6 +1,6 @@
 # Data Engineering
 
-The pipeline layer is the largest part of the system: ~84.5k lines of Python plus ~43.5k lines of tests, ingesting six external sources into a Postgres warehouse on a schedule that runs all day, every day, unattended. This document covers the patterns that keep it correct — most of them purchased with a specific failure.
+The pipeline layer is the largest part of the system, ingesting six external sources into a PostgreSQL data platform on a schedule that runs all day, every day, unattended. This document covers the patterns that keep it correct — most of them purchased with a specific failure.
 
 ## Sources and ingestion
 
@@ -70,7 +70,7 @@ The repo also standardizes line-ending policy explicitly, because a Windows + PO
 
 Covered fully in [case study #2](TECHNICAL_CASE_STUDY.md#2-scheduling-on-infrastructure-that-misses-half-its-alarms), but the data-engineering summary:
 
-- Timing authority is a Cloudflare Worker; GitHub Actions is compute. The decision followed measurement — bare GitHub cron dropped more than half its scheduled fires ([case study #2](TECHNICAL_CASE_STUDY.md#2-scheduling-on-infrastructure-that-misses-half-its-alarms)).
+- Primary timing authority is a Cloudflare Worker; GitHub Actions is compute. The decision followed measurement — bare GitHub cron dropped more than half its scheduled fires ([case study #2](TECHNICAL_CASE_STUDY.md#2-scheduling-on-infrastructure-that-misses-half-its-alarms)). Each workflow keeps its GitHub cron as an offset backup, so execution is **at-least-once**; idempotent writes make a doubled slot harmless.
 - Jobs derive their slate from the **schedule slot**, not the wall clock — late runs do the right work.
 - Eastern-time schedules are DST-doubled cron pairs whose inactive half is a verified no-op.
 - Information cutoffs are fixed per slate (e.g., forecasts use only data available at a declared cutoff time), so multiple daily slots resolve to one canonical package and repeat slots verify idempotence instead of double-writing.

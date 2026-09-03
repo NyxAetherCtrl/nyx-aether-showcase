@@ -67,12 +67,15 @@ Instrumented bare GitHub cron on a production workflow over a three-day window: 
 
 ### Design decision
 
-The measurement settled the architecture: *timing authority* and *compute* stay split, for every scheduled lane. The Worker — infrastructure whose one job is running on the minute — became the platform's single clock; GitHub Actions remained the runtime.
+The measurement settled the architecture: *timing authority* and *compute* stay split, for every scheduled lane. The Worker — infrastructure whose one job is running on the minute — became the platform's primary clock; GitHub Actions remained the runtime.
 
-- The Worker fires on schedule and dispatches the target workflows via API, so jobs start within seconds of their slot instead of whenever the queue drains.
-- Every dispatch carries a **slot identity** (which scheduled slot this run represents), and dedupe ensures each slot executes exactly once even if dispatch retries.
-- Downstream jobs derive the slate they should process **from the slot, not from the wall clock**. A run that starts late still computes the right answer for the right slot.
-- Overlapping or duplicate runs are harmless, because every write path is a keyed, idempotent upsert or an append with a content-addressed key.
+The key design choice is what the Worker does *not* try to guarantee. It fires on schedule and dispatches the target workflows via API, so jobs start within seconds of their slot instead of whenever the queue drains. But each workflow also keeps its own GitHub cron as a backup — offset for the slot-sensitive lanes — so if the Worker is ever down, the job still runs, just less punctually. That backup cron fires independently and the Worker cannot suppress it, so the honest execution model is **at-least-once, not exactly-once**: on a healthy day a slot can legitimately run more than once.
+
+Correctness therefore lives downstream, not in the dispatcher:
+
+- Every dispatch carries a **slot identity**, and the Worker's active-run and per-slot guards *reduce* duplicate dispatches — but they are best-effort and can't eliminate the independent backup path, so the system is designed to be correct even when a slot double-fires.
+- Every authoritative write is a **keyed, idempotent upsert** (on `game_pk`) or a content-addressed append, so a duplicate or retried run writes the same values — a no-op on state. Workflow concurrency groups serialize overlapping runs; they don't deduplicate them.
+- Downstream jobs derive the slate they should process **from the slot, not from the wall clock**, so a run that starts late still computes the right answer for the right slot.
 
 One wrinkle worth naming: cron on a UTC clock doubles against US daylight saving time. Schedules that must track Eastern Time run as paired entries, where the half that doesn't match the current DST offset resolves to a deliberate no-op — a correct no-op, verified as such, rather than a missing run.
 
