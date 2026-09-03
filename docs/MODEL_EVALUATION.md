@@ -14,7 +14,7 @@ MLB game outcomes are close to coin flips. Internal walk-forward analysis — co
 
 **Engine v2.2 — production.** The transparent pillar engine described in [ARCHITECTURE.md](ARCHITECTURE.md): hand-weighted category scores at its core (the explainer layer, never replaced), with a calibrated probability layer that blends in a regularized linear model learned from the same sub-scores. What matters for evaluation: it was promoted five days into the project behind a config flag with a tested rollback, and every forecast decomposes into pillar contributions a reader can interrogate.
 
-**Engine 3.0 — experimental.** A machine-learned challenger (regularized logistic regression over a frozen feature contract) developed under walk-forward validation with sealed holdout seasons. Experimental builds run in shadow mode on the live slate — same games, same information cutoff — publishing only to candidate-labeled surfaces, with no production authority. Its development metrics stay in the private research record; what is public is listed below.
+**Engine 3.0 — experimental.** A machine-learned challenger (regularized logistic regression over a frozen feature contract) developed under walk-forward validation with sealed holdout seasons. Experimental builds run in shadow mode on the live slate — same games, same information cutoff — publishing only to candidate-labeled surfaces, with no production authority. Its own development metrics stay in the private research record; the only public numbers for it are the retrospective-benchmark toplines further down, not the arc in the next section (which is the production model line's).
 
 ## The machine-learned line: development arc
 
