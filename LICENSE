@@ -1,0 +1,17 @@
+Copyright (c) 2026 Samuel Choi. All rights reserved.
+
+This repository is a portfolio case study. Its documentation, diagrams, and
+images are published for reading and evaluation (for example, by recruiters
+and hiring teams). They may be viewed and linked freely, but may not be
+reproduced, redistributed, or used commercially without written permission.
+
+The NYX Aether production source code is not published in this repository
+and is not licensed for any use.
+
+Data note: the NYX Aether platform consumes free, publicly accessible data
+sources (MLB Stats API, Statcast, The Odds API, Kalshi, Open-Meteo, NOAA)
+for research and demonstration purposes. This project is independent and is
+not affiliated with, sponsored by, or endorsed by Major League Baseball or
+any data provider. Screenshots in this repository may include data
+originating from those sources; such data remains the property of its
+respective owners.
