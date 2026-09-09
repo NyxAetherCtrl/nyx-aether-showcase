@@ -1,0 +1,77 @@
+name: Beauty full-page viewer links
+
+on:
+  push:
+    branches:
+      - portfolio/beauty-fullpage-viewer
+    paths:
+      - .github/workflows/beauty-viewer-links.yml
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: portfolio/beauty-fullpage-viewer
+
+      - name: Make Beauty screenshots open raw full-page images
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+
+          repo = 'https://raw.githubusercontent.com/NyxAetherCtrl/nyx-aether-showcase/main/assets/beauty'
+
+          root = Path('README.md')
+          s = root.read_text(encoding='utf-8')
+          old = '| ![NYX Aether Overview](assets/screenshots/overview.png) | ![Beauty Intelligence — Production Brand Snapshot](assets/beauty/beauty-production-brand-snapshot.png) |'
+          new = f'| ![NYX Aether Overview](assets/screenshots/overview.png) | [![Beauty Intelligence — Production Brand Snapshot](assets/beauty/beauty-production-brand-snapshot.png)]({repo}/beauty-production-brand-snapshot.png) |'
+          if old not in s:
+              raise SystemExit('root preview image line not found')
+          s = s.replace(old, new, 1)
+
+          old = '![Beauty Intelligence — Production Brand Snapshot](assets/beauty/beauty-production-brand-snapshot.png)'
+          new = f'[![Beauty Intelligence — Production Brand Snapshot](assets/beauty/beauty-production-brand-snapshot.png)]({repo}/beauty-production-brand-snapshot.png)'
+          if old not in s:
+              raise SystemExit('root lower Beauty image not found')
+          s = s.replace(old, new, 1)
+          s = s.replace(
+              '*The current production Brand Snapshot combines review coverage, brand health, complaint incidence, rating distribution, price positioning, and portfolio-level signals in one decision surface.*',
+              '*The current production Brand Snapshot combines review coverage, brand health, complaint incidence, rating distribution, price positioning, and portfolio-level signals in one decision surface. Click the image to open the full-page capture directly.*',
+              1,
+          )
+          root.write_text(s, encoding='utf-8')
+
+          beauty = Path('projects/beauty-intelligence/README.md')
+          s = beauty.read_text(encoding='utf-8')
+          intro = 'These screenshots were captured from the **live production product**, not from the older screenshot folder in the private source repository.'
+          replacement = intro + '\n\n**Viewing tip:** GitHub’s PNG file viewer fits images by width, so tall screenshots can look cropped inside the browser window. Click any screenshot below to open the raw full-page image directly.'
+          if intro not in s:
+              raise SystemExit('Beauty evidence intro not found')
+          s = s.replace(intro, replacement, 1)
+
+          images = [
+              ('Beauty Intelligence — Production Brand Snapshot', 'beauty-production-brand-snapshot.png'),
+              ('Beauty Intelligence — Production Product Snapshot', 'beauty-production-product-snapshot.png'),
+              ('Beauty Intelligence — Production Review Explorer', 'beauty-production-review-explorer.png'),
+          ]
+          for alt, name in images:
+              old = f'![{alt}](../../assets/beauty/{name})'
+              new = f'[![{alt}](../../assets/beauty/{name})]({repo}/{name})'
+              if old not in s:
+                  raise SystemExit(f'image markdown not found: {name}')
+              s = s.replace(old, new, 1)
+          beauty.write_text(s, encoding='utf-8')
+          PY
+
+          rm -f .github/workflows/beauty-viewer-links.yml
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "portfolio: make Beauty screenshots open full-page views [skip ci]"
+          git push origin HEAD:portfolio/beauty-fullpage-viewer
