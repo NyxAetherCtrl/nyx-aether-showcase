@@ -1,0 +1,81 @@
+name: Build Beauty preview thumbnails
+
+on:
+  push:
+    branches:
+      - portfolio/beauty-preview-thumbnails
+    paths:
+      - .github/workflows/beauty-preview-thumbnails.yml
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: portfolio/beauty-preview-thumbnails
+      - name: Create preview crops and update README embeds
+        shell: bash
+        run: |
+          python -m pip install pillow --quiet
+          python <<'PY'
+          from pathlib import Path
+          from PIL import Image
+
+          items = [
+              ('beauty-production-brand-snapshot.png', 'beauty-production-brand-preview.png'),
+              ('beauty-production-product-snapshot.png', 'beauty-production-product-preview.png'),
+              ('beauty-production-review-explorer.png', 'beauty-production-review-preview.png'),
+          ]
+
+          root = Path('assets/beauty')
+          for src_name, out_name in items:
+              src = root / src_name
+              out = root / out_name
+              with Image.open(src) as im:
+                  crop_h = min(900, im.height)
+                  preview = im.crop((0, 0, im.width, crop_h))
+                  preview.save(out, optimize=True)
+
+          raw = 'https://raw.githubusercontent.com/NyxAetherCtrl/nyx-aether-showcase/main/assets/beauty/'
+
+          # Root README: use compact preview image, keep click-through to full capture.
+          p = Path('README.md')
+          s = p.read_text(encoding='utf-8')
+          full_brand = raw + 'beauty-production-brand-snapshot.png'
+          s = s.replace(
+              f'[![Beauty Intelligence — Production Brand Snapshot]({full_brand})]({full_brand})',
+              f'[![Beauty Intelligence — Production Brand Snapshot](assets/beauty/beauty-production-brand-preview.png)]({full_brand})'
+          )
+          p.write_text(s, encoding='utf-8')
+
+          # Beauty case study: compact previews for Brand / Product / Reviews.
+          p = Path('projects/beauty-intelligence/README.md')
+          s = p.read_text(encoding='utf-8')
+          replacements = [
+              ('Brand Snapshot', 'beauty-production-brand-snapshot.png', 'beauty-production-brand-preview.png'),
+              ('Product Snapshot', 'beauty-production-product-snapshot.png', 'beauty-production-product-preview.png'),
+              ('Review Explorer', 'beauty-production-review-explorer.png', 'beauty-production-review-preview.png'),
+          ]
+          for label, full_name, preview_name in replacements:
+              full_url = raw + full_name
+              s = s.replace(
+                  f'[![Beauty Intelligence — Production {label}]({full_url})]({full_url})',
+                  f'[![Beauty Intelligence — Production {label}](../../assets/beauty/{preview_name})]({full_url})'
+              )
+          s = s.replace(
+              '**Viewing tip:** GitHub’s PNG file viewer fits images by width, so tall screenshots can look cropped inside the browser window. Click any screenshot below to open the raw full-page image directly.',
+              '**Viewing tip:** The inline images are compact previews. Click any screenshot to open the complete full-page production capture.'
+          )
+          p.write_text(s, encoding='utf-8')
+          PY
+
+          rm -f .github/workflows/beauty-preview-thumbnails.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "portfolio: use compact Beauty preview thumbnails [skip ci]"
+          git push origin HEAD:portfolio/beauty-preview-thumbnails
