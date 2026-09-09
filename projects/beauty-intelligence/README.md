@@ -40,7 +40,7 @@ These screenshots were captured from the **live production product**, not from t
 
 ### Review Explorer
 
-![Beauty Intelligence — Production Review Expllorer](../../assets/beauty/beauty-production-review-explorer.png)
+![Beauty Intelligence — Production Review Explorer](../../assets/beauty/beauty-production-review-explorer.png)
 
 *The Review Explorer links summary metrics back to filterable review evidence, related issues, retailer/rating facets, and searchable consumer language.*
 
