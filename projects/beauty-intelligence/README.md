@@ -24,24 +24,27 @@ The central DS question is not “can I run sentiment analysis?” It is: **how 
 
 ## Product evidence
 
-### Intelligence terminal — product entry point
+These screenshots were captured from the **live production product**, not from the older screenshot folder in the private source repository.
 
-![Beauty Intelligence Terminal](../../assets/beauty/beauty-home.png)
+### Production Brand Snapshot
 
-*The product starts from business questions — what consumers value, which complaints are growing, which brands are moving, and how the market is changing — then routes into evidence-backed analytical modules.*
+![Beauty Intelligence — Production Brand Snapshot](../../assets/beauty/beauty-production-brand-snapshot.png)
 
-### Brand Intelligence
+*The current production Brand Snapshot brings review coverage, retailer mix, brand health, complaint incidence, rating distribution, price positioning, and product-portfolio signals into one decision surface.*
 
-![Beauty Intelligence — Brand Intelligence](../../assets/beauty/beauty-brand.png)
+### Product Snapshot
 
-*Brand-level review volume, benefits, complaints, emerging signals, and brand-vs-market context are derived from the persisted semantic layer.*
+![Beauty Intelligence — Production Product Snapshot](../../assets/beauty/beauty-production-product-snapshot.png)
 
-| Emerging Complaint Radar | Consumer Shift |
-|---|---|
-| ![Beauty Complaint Radar](../../assets/beauty/beauty-complaints.png) | ![Beauty Consumer Shift](../../assets/beauty/beauty-shift.png) |
-| Complaint concepts ranked with visible evidence/support | Longitudinal share-of-voice, velocity, acceleration, and lifecycle context |
+*Product-level analysis carries the same evidence model into product health, complaint radar, retailer coverage, rating trends, review momentum, and real-review voices.*
 
-These screenshots are useful portfolio evidence because each surface maps directly to a DS problem described below: **information extraction → semantic aggregation → metric design → time-series / ranking logic → business decision support**.
+### Review Explorer
+
+![Beauty Intelligence — Production Review Expllorer](../../assets/beauty/beauty-production-review-explorer.png)
+
+*The Review Explorer links summary metrics back to filterable review evidence, related issues, retailer/rating facets, and searchable consumer language.*
+
+Together these production surfaces show the analytical chain: **review evidence → semantic extraction → governed metrics → brand/product analytics → decision-facing production UI**.
 
 ## End-to-end DS workflow
 
