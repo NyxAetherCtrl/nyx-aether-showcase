@@ -1,103 +1,167 @@
-# NYX Aether — Baseball Intelligence Platform
+# Data Science & Intelligence Portfolio
 
-![NYX Aether](assets/hero.png)
+**Two production data products spanning probabilistic forecasting, NLP, consumer intelligence, experimentation, and data engineering.**
 
-A production MLB analytics and forecasting platform — designed, built, and operated end-to-end by one person in 12 weeks. Six public data sources feed a PostgreSQL data platform whose temporal integrity is enforced by the database itself; two prediction engines run under frozen evaluation protocols; and the public product grades its own forecasts in the open. The hard part was never the baseball — it was making every number explainable, timestamped, and reproducible after the fact.
+Built and operated end-to-end by **Samuel Choi**. The production source repositories remain private; this public repository is the portfolio layer — architecture, methodology, evaluation discipline, product evidence, and the data-science decisions that matter.
 
-**Live product:** [baseball.nyx-aether.com](https://baseball.nyx-aether.com)
-
-**This repository is the engineering case study.** The product's source is private (see [Source availability](#source-availability--data-use)); this repo documents the architecture, the hard problems, and the evidence discipline behind them.
-
-| | |
-|---|---|
-| [Architecture](docs/ARCHITECTURE.md) | System design: sources → pipelines → data platform → serving, and the orchestration rail |
-| [Technical case study](docs/TECHNICAL_CASE_STUDY.md) | Five production problems: silent data loss, unreliable schedulers, forecast integrity, point-in-time correctness, evaluation governance |
-| [Data engineering](docs/DATA_ENGINEERING.md) | Ingestion, idempotency, freshness, identity resolution, and the failure modes that shaped them |
-| [Model evaluation](docs/MODEL_EVALUATION.md) | How the models are measured, what the numbers actually are, and the rules that prevent overclaiming |
-| [Project evolution](docs/PROJECT_EVOLUTION.md) | Eight stages from first commit to operated production system |
+| Project | Data-science focus | Product |
+|---|---|---|
+| ⚾ **[NYX Aether — Baseball Intelligence](projects/baseball/README.md)** | Predictive ML · probabilistic modeling · temporal validation · calibration · statistical inference · champion–challenger evaluation · MLOps | [Live product](https://baseball.nyx-aether.com) |
+| ◇ **[Beauty Intelligence](projects/beauty-intelligence/README.md)** | NLP / information extraction · taxonomy engineering · sentiment & complaint intelligence · human-ground-truth evaluation · time-series analytics · B2B data product | [Live product](https://beauty-intelligence-seven.vercel.app) |
 
 ---
 
-## What I built
+## Why these two projects belong together
 
-NYX Aether answers a simple product question — *who is likely to win tonight, and why?* — under a hard constraint: every number shown to a user must be explainable, timestamped, and reproducible after the fact.
+The domains are intentionally different. Baseball tests whether I can build a **forward-looking probabilistic model** without leaking the future. Beauty Intelligence tests whether I can turn **unstructured consumer language** into defensible product and market signals.
 
-- **Data platform.** Python pipelines ingest game schedules, box scores, pitch-level Statcast data, sportsbook odds, prediction-market prices, and stadium weather from six external sources into Supabase Postgres — with retries, freshness tracking, idempotent writes, and reconciliation passes that heal gaps instead of assuming clean runs.
-- **Data platform with database-enforced guarantees.** 71 SQL migrations define ~96 tables. Twelve are append-only, enforced by triggers that refuse `UPDATE`/`DELETE` for every role — historical facts cannot be rewritten through any database role, including the pipelines' own service role.
-- **Two engines, asymmetric authority.** A transparent pillar-based engine with calibrated probabilities publishes the forecast of record. A machine-learned challenger runs in shadow mode against it — its writer cannot reach production tables, and it is evaluated under preregistered, frozen protocols.
-- **Public accountability.** The product publishes its own win–loss record on every graded forecast, alongside sportsbook favorites' records on their own cohorts — with an explicit "compare the records, not just the percentages" explanation, because the cohorts differ.
-- **The product itself.** A Next.js 15 app — live scores, game analysis, player pages, playoff odds, and a model history page — in four languages, on a read-only API surface.
+The common workflow is the part I want a hiring team to see:
 
-## Architecture
+```text
+raw external data
+      ↓
+data acquisition + quality controls
+      ↓
+feature / semantic representation
+      ↓
+model or analytical engine
+      ↓
+evaluation with explicit denominators
+      ↓
+versioned production pipeline
+      ↓
+user-facing decision product
+      ↓
+monitoring, error analysis, iteration
+```
 
-![Architecture diagram](assets/architecture.svg)
+These are not notebook-only demos. Both projects connect data methodology to a production product and both treat **measurement integrity as part of the model**, not as documentation added afterward.
 
-The unusual part is the **orchestration rail**. GitHub Actions is the compute runtime; timing authority lives in a Cloudflare Worker that dispatches the scheduled workflows on the minute and labels every dispatch with a slot identity. The split was earned by measurement — bare GitHub cron, instrumented over three days on a production workflow, missed 8 of 15 scheduled fires (median delay 121 minutes, worst case 479). Scheduling is resilient rather than exactly-once: the Worker is primary, each workflow keeps its GitHub cron as a backup, and idempotent `game_pk`-keyed writes make a duplicate or retried run harmless. Jobs derive their work from the schedule slot, not the wall clock, so a delayed run still processes the right slate. Details in [ARCHITECTURE.md](docs/ARCHITECTURE.md) and [case study #2](docs/TECHNICAL_CASE_STUDY.md#2-scheduling-on-infrastructure-that-misses-half-its-alarms).
+---
 
-## Engineering highlights
+## Data Science skill map
 
-1. **A write-once forecast archive.** I caught upserts silently rewriting "pregame" win probabilities after games started — 33 of 60 archived values had drifted from what was first captured, which would have quietly corrupted every evaluation metric. The fix: an insert-only archive behind a unique lock, verified by checksum audits — and a doctrine that hardened into the 12 trigger-enforced append-only tables. ([Case study #1](docs/TECHNICAL_CASE_STUDY.md#1-the-forecast-of-record))
-2. **Silent truncation, found and fenced.** The Postgres REST layer caps responses at ~1,000 rows without an error. Four production readers were consuming truncated data — one table had 14,825 rows, and the *newest* rows were the ones dropped. Fix: a paged reader with a deterministic total order, plus a CI regression suite that simulates the truncation so the bug class can't return. ([Case study #3](docs/TECHNICAL_CASE_STUDY.md#3-the-database-was-silently-lying))
-3. **Point-in-time correctness compiled into the schema.** Three separate clocks per observation (what the source claimed, when it was observed, when the row was written). Content-addressed primary keys whose hashes are recomputed by `CHECK` constraints in-database. A sportsbook closing line locked 5 minutes before first pitch as a pure function of append-only snapshots — with the deadline arithmetic itself a `CHECK` constraint. ([Case study #4](docs/TECHNICAL_CASE_STUDY.md#4-point-in-time-correctness-as-a-schema-property))
-4. **Evaluation governance that cannot overclaim.** Split policy, metrics, and holdout seasons were frozen as hashed contracts before training; the out-of-time validation was preregistered, executed once, and recorded as consumed; the live comparison ledger refuses directional claims below its minimum-evidence threshold. ([Case study #5](docs/TECHNICAL_CASE_STUDY.md#5-evaluation-governance-that-cannot-overclaim))
-5. **A benchmark that caught its own bug.** The engine-comparison harness found non-determinism in its own reads, invalidated its first result, re-ran to bit-exact reproduction — and still published its verdict as "not statistically established." ([MODEL_EVALUATION.md](docs/MODEL_EVALUATION.md))
-6. **Fail-closed publication.** The cloud writer that publishes official forecasts runs from a SHA-pinned workflow behind a code-identity preflight that refuses to publish if the checkout diverges from the pinned revision; after the publish chain, liveness and coverage verification fails the run loudly if the official surface is unhealthy.
-7. **A byte-level encoding guard with a self-test.** After a shell round-trip corrupted seven merged files while every test stayed green, I wrote a stdlib-only guard that scans for corruption byte patterns — and its CI job first proves the guard *can still fail* before trusting its PASS.
-8. **A semantic layer for metrics.** Every pipeline is declared in a frozen registry (builder, validator, backfill, owner, status); shared statistical formulas live in one registry with denominator guards and null handling, verified byte-identical to the inline math they replaced before adoption.
+| Skill | Baseball Intelligence | Beauty Intelligence |
+|---|---|---|
+| **Problem framing** | Estimate pregame MLB win probability and explain uncertainty | Convert customer reviews into product, complaint, brand, and market intelligence |
+| **Supervised ML** | Binary classification with L2-regularized logistic regression | — |
+| **NLP / Information Extraction** | — | Multi-label concept extraction from review text with evidence spans |
+| **Feature Engineering** | Rolling form, run differential, season strength, rest, home-field and point-in-time signals | Concept taxonomy, phrase/context rules, sentiment/assertion states, review-level denominators |
+| **Temporal Validation** | Walk-forward / out-of-time train → validation → test protocol | Time-indexed review aggregation and trend windows |
+| **Leakage Prevention** | Point-in-time reconstruction, immutable pregame records, ingest-time controls | Versioned semantic tables, separate evaluation data, no prediction exposure during blind annotation |
+| **Probability Calibration** | Platt scaling, isotonic regression, identity calibration | — |
+| **Statistical Inference** | Bootstrap CIs, paired bootstrap, cluster-aware uncertainty, sign testing | Error slices and uncertainty-aware evaluation design rather than unqualified accuracy claims |
+| **Experiment / Version Evaluation** | Champion–challenger paired benchmarking: Engine 2.2 vs 3.0 | Side-by-side V2/V3 semantic engine rollout with feature gates and rollback boundaries |
+| **Human Ground Truth** | Final game outcomes provide objective labels | Blind human annotation pipeline with representative + challenge cohorts |
+| **Evaluation Metrics** | Log loss, Brier, AUC, ECE, accuracy | Concept detection, span IoU/exact match, sentiment/assertion accuracy & macro-F1, confusion matrices, strict end-to-end metrics |
+| **Sampling / Cohort Design** | Strict paired-game eligibility and date-aware evaluation cohorts | Deterministic proportional stratification plus targeted challenge-set sampling |
+| **Time-Series Analytics** | Rolling historical windows and prospective grading | Monthly concept/sentiment rollups, emerging-signal and complaint trend analysis |
+| **Metric Design** | Proper scoring rules and cohort-matched comparison | Explicit review denominators, support thresholds, typed unavailable/low-sample states |
+| **Data Engineering** | Multi-source ingestion, append-only history, deterministic paging, reconciliation | Multi-retailer collection, incremental tagging, dirty-month rollups, idempotent recovery |
+| **Data Quality** | Point-in-time audits, pagination regression guards, fail-closed publication | Denominator tests, read-failure vs true-empty states, crawler recovery, semantic drift guards |
+| **Model / Engine Governance** | Frozen protocols, content-addressed artifacts, test-set access controls | Versioned taxonomy, frozen evaluation identity, blind predictions, read/write feature gates |
+| **Production ML / MLOps** | Shadow candidate, official champion, scheduled scoring, monitoring, rollback | Offline tagging + persisted semantic layer + production serving, V2/V3 isolation and rollback |
+| **Product Analytics** | Public forecast history and market-context comparison | Brand intelligence, peer benchmarking, product complaint radar, consumer-love metrics |
 
-## Data & modeling, with denominators
+### Skills demonstrated across the portfolio
 
-The modeling story is deliberately unglamorous, because MLB game outcomes are close to coin flips and pretending otherwise collapses in front of anyone who knows the domain.
+**Machine Learning & Statistics**  
+Binary Classification · Logistic Regression · L2 Regularization · Probability Calibration · Platt Scaling · Isotonic Regression · Feature Engineering · Model Selection · Bootstrap Confidence Intervals · Paired Model Evaluation · Statistical Significance · Error Analysis
 
-- Walk-forward out-of-sample AUC for the production model line rose stepwise across development — documented with its cohort and sample size in [MODEL_EVALUATION.md](docs/MODEL_EVALUATION.md) — against an internal empirical ceiling near 0.58–0.60 for this near-coin-flip problem. Log loss, Brier, and calibration are the primary metrics; AUC is secondary.
-- The production engine's public record (snapshot **September 2, 2026**): **524–450 on 974 graded forecasts — 53.8%, ±3.1 pp at 95%**, above a coin flip (two-sided p ≈ 0.017). Sportsbook favorites over a recent overlapping window run **56.8–57.3%** *on their own priced cohorts* (213–227 games each) — a different denominator, which the product states out loud instead of burying.
-- The experimental engine has **no production authority** — its writer cannot reach official tables, its output renders only under explicit candidate labeling, and a repository test sweeps the user-facing tree to prove no experimental output leaks into the product. (Mechanisms in [MODEL_EVALUATION.md](docs/MODEL_EVALUATION.md).)
+**Experimentation & Evaluation**  
+Champion–Challenger Testing · Walk-Forward Validation · Out-of-Time Testing · Prospective Validation · Holdout Governance · Stratified Sampling · Challenge Sets · Human-in-the-Loop Evaluation · Macro-F1 · Confusion Matrices · Span IoU
 
-## Production & reliability
+**NLP & Consumer Intelligence**  
+Information Extraction · Multi-Label Concept Tagging · Taxonomy / Ontology Design · Negation & Context Handling · Sentiment Analysis · Assertion Classification · Evidence Extraction · Complaint Intelligence · Trend Detection
 
-- **45 GitHub Actions workflows**: 16 CI gates, 16 scheduled data pipelines, 6 engine pipelines, a freshness monitor, and manual tools.
-- **Observability as a wrapper**: every pipeline run records run metadata and data freshness together, and failure never advances freshness.
-- **Idempotent, at-least-once execution**: the Cloudflare Worker is the primary scheduler with each workflow's GitHub cron kept as backup; keyed upserts, healing lookbacks, and set-based reconciliation make a duplicate, retried, or overlapping run harmless ([DATA_ENGINEERING.md](docs/DATA_ENGINEERING.md)).
-- **Read-only serving surface**: 27 GET-only API routes, no server actions — the browser cannot mutate anything, and reads split between a public anon-key + RLS path and a server-only privileged path that never reaches the client ([ARCHITECTURE.md](docs/ARCHITECTURE.md)).
-- **Incidents become gates**: the failure classes that actually occurred — encoding corruption, pagination truncation, language drift, label leakage — each run as blocking CI checks ([DATA_ENGINEERING.md](docs/DATA_ENGINEERING.md#testing)).
+**Data Engineering & Analytics Engineering**  
+Python · SQL · PostgreSQL · Supabase · ETL / ELT · Incremental Pipelines · Idempotency · Data Lineage · Point-in-Time Data · Data Quality Testing · Metric Semantics · Denominator Design · Time-Series Aggregation
 
-## The product
+**Production & Product**  
+MLOps · Model Versioning · Shadow Deployment · Feature Gating · CI/CD · GitHub Actions · Cloudflare Workers · Vercel · Next.js · TypeScript · Monitoring · Fail-Closed Systems · Reproducible Pipelines
 
-The public app at [baseball.nyx-aether.com](https://baseball.nyx-aether.com) — server-rendered, four languages (EN/JA/ES/KO), designed to be readable by a casual fan in about ten seconds per screen. Every screen carries the product's standing disclaimer: analysis, not betting advice.
+> **Deliberate non-claim:** the Baseball champion–challenger benchmark is not presented as an A/B test because games were not randomly assigned to treatments. Beauty Intelligence does not present semantic “accuracy” as human-validated until the blind ground-truth process supports that claim. Correct experiment labeling is part of the work.
 
-| | |
-|---|---|
-| ![Model History](assets/screenshots/model-history.png) | ![Analysis](assets/screenshots/analysis.png) |
-| **Model History** — the model grades itself in public: every pick, wins and losses alike, beside the market's record on its own cohort | **Analysis** — the daily slate with explanatory factors: why the model leans where it leans |
-| ![Overview](assets/screenshots/overview.png) | ![Game Center](assets/screenshots/game-center.png) |
-| **Overview** — today's slate with win probabilities and model context | **Game Center** — per-game matchup detail, factors, and live state |
+---
 
-<p align="center"><img src="assets/screenshots/live.png" alt="Live view" width="720"><br><b>Live</b> — in-progress scores with adaptive polling; market probabilities appear beside the model's as labeled context, not advice</p>
+# Project 1 — NYX Aether Baseball Intelligence
+
+[**Open the Baseball case study →**](projects/baseball/README.md)
+
+A production MLB analytics and forecasting platform built around one difficult requirement: **a prediction must be reproducible using only information that was available at prediction time.**
+
+### Data-science highlights
+
+- Built a probabilistic binary-classification pipeline for MLB game outcomes.
+- Designed **point-in-time feature engineering** and walk-forward validation to prevent look-ahead bias.
+- Separated model training from **probability calibration** and compared identity, Platt, and isotonic calibration using validation-only evidence.
+- Evaluated predictions with proper scoring rules — **log loss and Brier score** — alongside AUC, ECE, and accuracy.
+- Built a **paired champion–challenger benchmark** so Engine 2.2 and Engine 3.0 are compared on the exact same games.
+- Quantified uncertainty with bootstrap confidence intervals rather than promoting a model from a point estimate alone.
+- Operated prospective prediction capture, grading, versioning, monitoring, rollback, and cloud scheduling.
+
+### One result worth discussing in an interview
+
+The validated strict historical benchmark contained **120 paired games across 9 dates**. Engine 3.0 improved log loss and Brier score directionally, but the paired 95% confidence intervals crossed zero, so the published conclusion remained **“directionally better, not statistically established.”** The benchmark also caught a nondeterministic pagination defect in its own evaluation harness, invalidated the first run, fixed the data-ordering contract, and reran from scratch.
+
+That is a better representation of the project than “my model got a higher accuracy.”
+
+![NYX Aether Model History](assets/screenshots/model-history.png)
+
+**Deep dives:** [Architecture](docs/ARCHITECTURE.md) · [Technical case study](docs/TECHNICAL_CASE_STUDY.md) · [Data engineering](docs/DATA_ENGINEERING.md) · [Model evaluation](docs/MODEL_EVALUATION.md) · [Project evolution](docs/PROJECT_EVOLUTION.md)
+
+---
+
+# Project 2 — Beauty Intelligence
+
+[**Open the Beauty Intelligence case study →**](projects/beauty-intelligence/README.md)
+
+A production consumer-review intelligence platform that turns large volumes of unstructured beauty reviews into structured concepts, sentiment, complaint evidence, product signals, brand comparisons, and longitudinal trends.
+
+### Data-science highlights
+
+- Designed a domain taxonomy and **multi-label concept extraction** layer for beauty-review language.
+- Built semantic handling for phrase context, negation, assertion state, and sentiment instead of treating keyword matches as truth.
+- Materialized review-level concept mentions and monthly time-series rollups so analytics requests do not rerun NLP on every page load.
+- Built complaint ranking, brand/product intelligence, comparable-peer selection, and explicit metric-denominator rules.
+- Designed a **blind human-ground-truth evaluation system**: predictions are hidden from annotators, representative and challenge cohorts are separated, and evaluation aligns predicted/human evidence spans before scoring.
+- Evaluation supports concept detection, span exactness/IoU, sentiment and assertion accuracy, macro-F1, per-class metrics, confusion matrices, and strict end-to-end correctness.
+- Built versioned V2/V3 data paths and feature gates so a new semantic engine can be evaluated without silently replacing the incumbent.
+
+### Why this matters for Data Science
+
+This project demonstrates a different side of DS from Baseball: the hard problem is not predicting a clean binary label. It is defining **what should count**, building a reproducible semantic representation, creating ground truth, protecting denominators, distinguishing “no signal” from “query failed,” and translating noisy language into business decisions without overstating model quality.
+
+---
 
 ## Tech stack
 
-**Python** (pipelines, engines, evaluation) · **PostgreSQL / Supabase** (data platform, RLS, triggers as guarantees) · **TypeScript / Next.js 15 / React 19 / Tailwind** (product) · **GitHub Actions** (compute + CI) · **Cloudflare Workers** (timing authority) · **Vercel** (serving) · pandas, scikit-learn, pybaseball, pytest, node:assert
+**Python** · **SQL** · **PostgreSQL / Supabase** · **pandas** · **scikit-learn** · **pytest** · **TypeScript** · **Next.js / React** · **GitHub Actions** · **Cloudflare Workers** · **Vercel**
 
-## By the numbers
+The two systems use different subsets of the stack; the project case studies distinguish the modeling and production methods actually used in each one.
 
-| | |
-|---|---|
-| Timeline | 12 weeks, solo (June 10 – September 2, 2026) |
-| Public track record | 524–450 on 974 graded forecasts (53.8%), snapshot Sep 2, 2026 |
-| Data integrity | 71 migrations; 12 append-only tables enforced by database triggers |
-| Automation | 45 GitHub Actions workflows, Cloudflare-dispatched with idempotent writes |
-| Serving | 27 read-only API endpoints, 4 languages |
+---
 
-## Project evolution
+## Source availability
 
-The system was promoted, not launched: the first engine went to production behind a config flag five days after the first commit, and every major transition since (engine v2.2, the V3 UI, the cloud writer cutover) shipped with a tested rollback path. The eight stages — including the failures that reshaped the architecture — are in [PROJECT_EVOLUTION.md](docs/PROJECT_EVOLUTION.md).
+The full production repositories are private. They include operational configuration, internal runbooks, model/engine internals, raw-data handling, and deployment machinery that are not necessary for portfolio review.
 
-## Source availability & data use
+This public showcase intentionally exposes the parts that are useful for technical evaluation:
 
-- **The production source is private.** It contains operational configuration and model internals that are not appropriate to publish. This case-study repo is the public artifact: architecture, decisions, tradeoffs, and verified numbers — no fabricated code samples (anything illustrative is labeled as simplified pseudocode).
-- **Data use.** The platform consumes free, publicly accessible data (MLB Stats API, Statcast via pybaseball, The Odds API, Kalshi, Open-Meteo, NOAA) for research and demonstration. It is an independent project, not affiliated with or endorsed by MLB or any data provider. The product presents explainable sports intelligence — it does not offer betting advice, and a CI gate enforces that stance in all four languages.
-- **Method.** AI coding tools were used in the loop for implementation speed. The architecture, constraints, evaluation policy, and production decisions were mine, and they are governed mechanically rather than by good intentions: every change lands through a pull request, blocking CI guards the failure classes that have actually occurred, immutability and access rules are enforced in the database, and the evaluation protocols bind me as much as anyone.
+- system architecture and data flow;
+- modeling / semantic methodology;
+- evaluation design and limitations;
+- statistical reasoning and metric definitions;
+- representative production incidents and how they changed the system;
+- screenshots and live products;
+- evidence of reproducibility, testing, and governance.
+
+This is not intended to be an open-source distribution of either product.
+
+---
 
 ## About
 
-Designed, built, and operated by **Samuel Choi** — targeting data science, analytics engineering, and ML-adjacent product roles. Contact via [GitHub profile](https://github.com/NyxAetherCtrl). This project is my answer to "what does production-grade look like when one person owns every layer?"
+Designed, built, and operated by **Samuel Choi**. I am using these projects to demonstrate end-to-end capability across **data science, product analytics, analytics engineering, and ML-adjacent data products** — from raw data and methodology through validation and production delivery.
+
+AI coding tools were used as implementation accelerators. Problem framing, architecture, data definitions, evaluation policy, acceptance criteria, and production decisions are represented here as explicit, testable system contracts rather than as tool-generated claims.
