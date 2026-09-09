@@ -4,26 +4,36 @@
 
 [← Portfolio home](../../README.md) · [Live product](https://baseball.nyx-aether.com) · [Architecture](../../docs/ARCHITECTURE.md) · [Model evaluation](../../docs/MODEL_EVALUATION.md)
 
-NYX Aether is a production MLB analytics and forecasting system. The modeling problem sounds simple — estimate which team is more likely to win — but the real DS problem is harder: **produce a probability from only information available before first pitch, preserve that forecast, and evaluate it later without rewriting history.**
+NYX Aether is a production MLB analytics and forecasting system. The core DS requirement is strict: **estimate win probability using only information available before first pitch, preserve the forecast, and evaluate it later without rewriting history.**
 
 ---
 
-## Recruiter summary
+## 30-second hiring scan
 
-This project demonstrates an end-to-end predictive data-science lifecycle:
+**Best-fit roles:** Data Scientist · Applied Data Scientist · Product Data Scientist · ML-adjacent Data Scientist
+
+**Core skills demonstrated:**
+
+`Binary Classification` · `Logistic Regression` · `L2 Regularization` · `Feature Engineering` · `Walk-Forward Validation` · `Point-in-Time Data` · `Probability Calibration` · `Bootstrap Inference` · `Champion–Challenger Evaluation` · `MLOps`
+
+**What makes it more than a modeling demo:** the model lives inside a production system with historical backtesting, prospective capture, immutable forecast records, cloud scheduling, model versioning, monitoring, and rollback.
+
+---
+
+## End-to-end DS workflow
 
 ```text
 MLB / Statcast / contextual data
               ↓
 point-in-time feature engineering
               ↓
-model training
+model training + standardization
               ↓
 probability calibration
               ↓
-time-separated validation
+chronological validation
               ↓
-champion–challenger evaluation
+champion–challenger comparison
               ↓
 pregame forecast lock
               ↓
@@ -42,38 +52,35 @@ The emphasis is not “I trained a classifier.” It is **temporal correctness, 
 |---|---|---|
 | **Predictive Modeling** | Binary Classification | Predict MLB home-win probability rather than only a hard pick |
 | | Logistic Regression | Interpretable probabilistic challenger model |
-| | L2 Regularization | Penalizes unstable coefficients and reduces overfitting |
-| | Deterministic optimization | Engine 3.0 reference implementation uses deterministic IRLS fitting |
-| **Feature Engineering** | Rolling features | Recent win rate and run differential over historical windows |
-| | Season-to-date features | Team strength built only from information available before the target game |
-| | Rest / fatigue context | Rest-day signal included as a point-in-time feature |
-| | Home-field control | Explicit home indicator rather than leaving home advantage implicit |
-| | Standardization | Scaling statistics fit on train only, then frozen for later partitions |
-| **Validation** | Walk-Forward Validation | Chronological train → validation → test; random split is intentionally prohibited |
-| | Out-of-Time Testing | Future season held out from fitting and calibration decisions |
-| | Point-in-Time Reconstruction | Historical scoring rebuilds what the model could have known at that moment |
-| | Look-Ahead Bias Prevention | Future outcomes, postgame facts, and later-ingested records are fenced from earlier predictions |
-| | Test-set governance | Final test access is guarded to reduce repeated tuning against the holdout |
-| **Probability Modeling** | Probability Calibration | Raw model probability is evaluated separately from calibration |
-| | Platt Scaling | Logistic recalibration on validation evidence |
-| | Isotonic Regression | Monotonic non-parametric calibration with edge-stability guards |
-| | Out-of-Fold Selection | Calibration candidates are compared on OOF validation predictions rather than their own fit rows |
-| **Evaluation** | Log Loss | Primary proper scoring rule for probabilistic forecasts |
-| | Brier Score | Measures squared probability error |
-| | AUC | Measures ranking/discrimination quality |
-| | Expected Calibration Error | Measures probability reliability |
-| | Accuracy | Secondary directional win/loss metric |
-| **Statistical Inference** | Bootstrap Confidence Intervals | Quantifies uncertainty around model metrics |
-| | Paired Bootstrap | Resamples game-level Engine 3.0 − Engine 2.2 differences on the same games |
-| | Cluster-Aware Bootstrap | Resamples date clusters to address shared game-day conditions / effective sample size |
+| | L2 Regularization | Reduces coefficient instability and overfitting |
+| | Deterministic IRLS | Reference implementation fits reproducibly |
+| **Feature Engineering** | Rolling features | Recent win rate and run differential |
+| | Season-to-date strength | Built only from information available before the target game |
+| | Rest / fatigue | Rest-day context as a point-in-time feature |
+| | Home-field indicator | Explicit environmental/context feature |
+| | Train-only standardization | Scaler statistics fit on train and frozen for later partitions |
+| **Validation** | Walk-Forward Validation | Chronological train → validation → test; random split intentionally prohibited |
+| | Out-of-Time Testing | Future season held out from fitting/calibration decisions |
+| | Point-in-Time Reconstruction | Historical replay rebuilds what the model could have known at prediction time |
+| | Look-Ahead Bias Prevention | Future outcomes and later facts are fenced from earlier predictions |
+| | Holdout Governance | Test access is controlled to reduce repeated tuning against the holdout |
+| **Probability Modeling** | Platt Scaling | Logistic recalibration on validation evidence |
+| | Isotonic Regression | Monotonic non-parametric calibration |
+| | OOF Calibration Selection | Candidate calibrators compared on out-of-fold validation predictions |
+| **Evaluation** | Log Loss | Primary proper scoring rule for probability quality |
+| | Brier Score | Squared probability error |
+| | AUC | Ranking/discrimination quality |
+| | ECE | Calibration reliability |
+| | Accuracy | Secondary directional metric |
+| **Statistical Inference** | Bootstrap Confidence Intervals | Quantifies metric uncertainty |
+| | Paired Bootstrap | Engine 3.0 − Engine 2.2 differences on identical games |
+| | Date-Cluster Bootstrap | Sensitivity to correlated/shared game-day conditions |
 | | Sign Test | Non-parametric paired directional comparison |
-| **Experimentation** | Champion–Challenger Testing | Incumbent Engine 2.2 vs Engine 3.0 challenger under fixed comparison rules |
-| | Paired Benchmarking | Both engines score the identical eligible game cohort |
-| | Prospective Validation | Predictions are captured before outcomes, then graded after settlement |
-| **MLOps** | Model / artifact versioning | Model and calibration identity are versioned and content-addressed |
-| | Shadow evaluation | Challenger can accumulate evidence without silently becoming production authority |
-| | Reproducibility | Same inputs / config / code identity are expected to reproduce the same output |
-| | Monitoring & rollback | Production authority, health checks, and fallback paths are explicit |
+| **Experimentation** | Champion–Challenger Testing | Incumbent Engine 2.2 vs Engine 3.0 under fixed rules |
+| | Prospective Validation | Capture prediction first; grade only after outcome settlement |
+| **MLOps** | Model/artifact versioning | Model + calibration identity is frozen and traceable |
+| | Shadow evaluation | Challenger accumulates evidence without becoming production authority |
+| | Monitoring / rollback | Production health and fallback paths are explicit |
 
 ---
 
@@ -89,15 +96,15 @@ fit coefficients        model/calibration decisions      final comparison
 fit scaler              OOF calibration evaluation       no fitting
 ```
 
-Why this matters: a random split would allow later-season information patterns to leak into the model’s apparent historical performance. In a forecasting problem, **time is part of the experimental design**.
+Why this matters: random train/test splitting can create an unrealistically easy evaluation when the real task is forecasting the future. Here, **time is part of the experimental design**.
 
-Related public documentation: [Model evaluation](../../docs/MODEL_EVALUATION.md) · [Technical case study](../../docs/TECHNICAL_CASE_STUDY.md)
+This demonstrates: **temporal validation, out-of-time testing, data-leakage prevention, reproducible feature construction, and holdout discipline**.
 
 ---
 
 ## Engine 2.2 vs Engine 3.0 — paired model experiment
 
-This is intentionally **not described as an A/B test**. There is no randomized assignment of games to treatments. Both engines score the same eligible games; the unit of comparison is a paired game.
+This is intentionally **not described as an A/B test**. Games were not randomly assigned to treatments. Both engines score the same eligible games, so the correct framing is **paired model evaluation / champion–challenger testing**.
 
 Validated strict historical benchmark:
 
@@ -111,7 +118,7 @@ Validated strict historical benchmark:
 
 Cohort: **120 paired 2026 games across 9 dates**.
 
-Paired game-level uncertainty:
+Paired uncertainty:
 
 - Log-loss Δ 95% CI: **[-0.044632, +0.013092]**
 - Brier Δ 95% CI: **[-0.021630, +0.006606]**
@@ -121,44 +128,24 @@ Paired game-level uncertainty:
 
 > Engine 3.0 is **directionally better** on log loss and Brier score in this cohort, but the improvement is **not statistically established** because the primary paired confidence intervals include zero.
 
-That conclusion is deliberately less exciting than “Engine 3.0 wins.” It is also the scientifically defensible conclusion.
+That conclusion is less exciting than “Engine 3.0 wins,” but it is the defensible conclusion.
 
 ---
 
 ## A benchmark that invalidated itself
 
-One of the strongest parts of the project is a failure, not a model score.
-
-The initial engine comparison exposed nondeterministic predictions. Root cause: paginated database reads were not ordered, so page boundaries could return inconsistent row sets. A benchmark that cannot reproduce its own inputs cannot credibly measure a small model difference.
+The initial comparison exposed nondeterministic predictions. Root cause: paginated database reads were not totally ordered, so repeated reads could produce different row sets around page boundaries.
 
 The response was to:
 
 1. invalidate the original result;
-2. add deterministic total ordering to paginated reads;
+2. add deterministic ordering to paginated reads;
 3. verify unique ordering keys;
 4. rerun both engines from scratch;
-5. reproduce the 120-game cohort bit-exact across independent full runs;
+5. reproduce the 120-game cohort across independent runs;
 6. keep the statistical conclusion conservative.
 
-This is the kind of **data-quality / experimental-integrity debugging** that is easy to miss in notebook projects and central to real DS work.
-
----
-
-## Feature engineering principles
-
-A feature is not eligible simply because it correlates with outcomes. It must also be reconstructable at prediction time.
-
-Examples of active / verified feature families include:
-
-- recent team form;
-- rolling run differential;
-- season-to-date strength;
-- team rest days;
-- home-field indicator.
-
-Candidate features are admitted only when their historical availability can be reconstructed without future leakage. Missing or unverifiable inputs are excluded rather than backfilled with information that would not have existed at prediction time.
-
-This makes **point-in-time feature engineering** a core modeling constraint rather than a post-hoc audit.
+This demonstrates **experimental-integrity debugging, data-quality validation, reproducibility, and willingness to invalidate a favorable result when the measurement system is wrong**.
 
 ---
 
@@ -168,9 +155,9 @@ For a user-facing forecast, “picked the winner” is not enough. A 70% predict
 
 The calibration layer compares:
 
-- **identity / none** — preserve the raw model probability;
-- **Platt scaling** — fit a logistic transform of raw logits;
-- **isotonic regression** — fit a monotonic non-parametric mapping.
+- **identity / none** — raw model probability;
+- **Platt scaling** — logistic transform;
+- **isotonic regression** — monotonic non-parametric mapping.
 
 Candidate calibrators are evaluated out-of-fold on validation data. Selection prioritizes log loss, then Brier score, then ECE, with simplicity as a tie-breaker. The test partition does not select the calibrator.
 
@@ -178,17 +165,34 @@ Skills demonstrated: **calibration analysis, proper scoring rules, OOF model sel
 
 ---
 
-## Data engineering & production ML
+## Feature engineering principles
 
-The prediction engine sits on top of a broader data platform, so DS correctness also depends on engineering controls:
+A feature is not eligible simply because it correlates with outcomes. It must be reconstructable at prediction time.
 
-- append-only / write-once historical records for forecasts and factual snapshots;
-- deterministic pagination and total ordering;
+Verified feature families include:
+
+- recent team form;
+- rolling run differential;
+- season-to-date strength;
+- rest days;
+- home-field context.
+
+Missing or unverifiable inputs are excluded rather than repaired with information that did not exist at the original prediction timestamp.
+
+That makes **point-in-time feature engineering** a modeling constraint, not a post-hoc audit.
+
+---
+
+## Production ML / data engineering
+
+The prediction engine sits on top of a larger data platform, so model correctness depends on engineering controls:
+
+- append-only / write-once forecast and factual history;
+- deterministic pagination;
 - idempotent scheduled pipelines;
-- source freshness and reconciliation;
-- cloud scheduling and retry-safe execution;
-- explicit production champion vs shadow challenger authority;
-- CI regression tests created from real production failure modes;
+- freshness and reconciliation checks;
+- production champion vs shadow challenger authority;
+- CI regression tests derived from actual production failures;
 - fail-closed publication when inputs or code identity are not trustworthy.
 
 See [Data engineering](../../docs/DATA_ENGINEERING.md) and [Architecture](../../docs/ARCHITECTURE.md).
@@ -208,7 +212,20 @@ See [Data engineering](../../docs/DATA_ENGINEERING.md) and [Architecture](../../
 
 ---
 
-## Interview-ready skill summary
+## Interview-ready talking points
+
+1. Why a random split is the wrong default for a forecasting problem.
+2. Why log loss / Brier are more informative than accuracy for probabilistic predictions.
+3. How Platt vs isotonic calibration were selected without leaking the test set.
+4. Why Engine 2.2 vs 3.0 is paired model evaluation rather than randomized A/B testing.
+5. How bootstrap confidence intervals changed the model-promotion conclusion.
+6. How a pagination bug invalidated the first benchmark and how reproducibility was restored.
+7. Why point-in-time feature availability matters as much as predictive power.
+8. How shadow evaluation, model authority, monitoring, and rollback reduce production risk.
+
+---
+
+## Skills summary
 
 **Machine Learning:** Binary Classification · Logistic Regression · L2 Regularization · Feature Engineering · Feature Standardization · Probability Calibration · Platt Scaling · Isotonic Regression
 
