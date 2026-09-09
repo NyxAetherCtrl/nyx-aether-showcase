@@ -1,0 +1,36 @@
+name: Import Beauty Portfolio Screenshots
+
+on:
+  push:
+    branches:
+      - portfolio/visual-evidence-pass
+    paths:
+      - .github/workflows/import-beauty-screenshots.yml
+
+permissions:
+  contents: write
+
+jobs:
+  import-screenshots:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout showcase branch
+        uses: actions/checkout@v4
+        with:
+          ref: portfolio/visual-evidence-pass
+      - name: Download exported Beauty screenshots
+        run: |
+          curl -fsSL 'https://sdmntprnorthcentralus.oaiusercontent.com/files/00000000-aa38-822f-bf54-516d9bb4fe16/raw?se=2026-09-09T19%3A44%3A57Z&sp=r&sv=2026-02-06&sr=b&scid=0de8ba23-e88d-5a9a-afad-ca57841e5c02&skoid=78501c7f-f65d-4e8d-9110-bed29e1beb41&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-09-09T13%3A11%3A15Z&ske=2026-09-10T13%3A11%3A15Z&sks=b&skv=2026-02-06&sig=kQX8PzjIgN5OqkB43Cnz9Lz79U7zI2NEnX6cjMBY6q4%3D' -o /tmp/beauty-screens.zip
+          mkdir -p assets/beauty
+          unzip -j /tmp/beauty-screens.zip -d assets/beauty
+          test -s assets/beauty/beauty-home.png
+          test -s assets/beauty/beauty-brand.png
+          test -s assets/beauty/beauty-complaints.png
+          test -s assets/beauty/beauty-shift.png
+      - name: Commit imported screenshots
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/beauty/*.png
+          git commit -m 'docs(portfolio): add Beauty product screenshots'
+          git push origin HEAD:portfolio/visual-evidence-pass
