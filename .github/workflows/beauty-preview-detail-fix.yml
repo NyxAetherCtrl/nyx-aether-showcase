@@ -1,0 +1,46 @@
+name: Finish Beauty detail preview links
+
+on:
+  push:
+    branches:
+      - portfolio/beauty-preview-thumbnails
+    paths:
+      - .github/workflows/beauty-preview-detail-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: portfolio/beauty-preview-thumbnails
+      - name: Use compact previews in Beauty case study
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          p = Path('projects/beauty-intelligence/README.md')
+          s = p.read_text(encoding='utf-8')
+          base = 'https://raw.githubusercontent.com/NyxAetherCtrl/nyx-aether-showcase/main/assets/beauty/'
+          items = [
+              ('Brand Snapshot','beauty-production-brand-snapshot.png','beauty-production-brand-preview.png'),
+              ('Product Snapshot','beauty-production-product-snapshot.png','beauty-production-product-preview.png'),
+              ('Review Explorer','beauty-production-review-explorer.png','beauty-production-review-preview.png'),
+          ]
+          for label, full_name, preview_name in items:
+              old = f'[![Beauty Intelligence — Production {label}](../../assets/beauty/{full_name})]({base}{full_name})'
+              new = f'[![Beauty Intelligence — Production {label}](../../assets/beauty/{preview_name})]({base}{full_name})'
+              if old not in s:
+                  raise SystemExit(f'expected markup not found: {label}')
+              s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+          rm -f .github/workflows/beauty-preview-detail-fix.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "portfolio: use compact previews in Beauty case study [skip ci]"
+          git push origin HEAD:portfolio/beauty-preview-thumbnails
