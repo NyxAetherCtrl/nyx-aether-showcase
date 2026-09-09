@@ -35,23 +35,22 @@ jobs:
           const { chromium } = require('/tmp/pw/node_modules/playwright');
 
           const BASE = 'https://beauty-intelligence-seven.vercel.app';
-          const targets = [
-            {
-              path: '/?b=e.l.f.',
-              out: 'assets/beauty/beauty-production-brand-snapshot.png',
-              required: ['Brand Snapshot', 'Review Share by Retailer', 'Brand Health', 'Complaint Radar', 'Rating Trend', 'Price Positioning', 'Product Portfolio Map'],
-            },
-            {
-              path: '/products?b=e.l.f.',
-              out: 'assets/beauty/beauty-production-products.png',
-              required: ['Product Snapshot'],
-            },
-            {
-              path: '/reviews?b=e.l.f.',
-              out: 'assets/beauty/beauty-production-reviews.png',
-              required: ['Review Explorer'],
-            },
-          ];
+
+          async function gotoReady(page, path) {
+            const response = await page.goto(BASE + path, { waitUntil: 'networkidle', timeout: 90000 });
+            if (!response || !response.ok()) {
+              throw new Error(`Navigation failed for ${path}: ${response && response.status()}`);
+            }
+            await page.waitForTimeout(4000);
+            return page.locator('body').innerText();
+          }
+
+          function requireLabels(body, labels, path) {
+            for (const label of labels) {
+              if (!body.includes(label)) throw new Error(`Expected label '${label}' missing on ${path}`);
+            }
+            console.log(`${path}: PASS — ${labels.join(' | ')}`);
+          }
 
           (async () => {
             const browser = await chromium.launch({ headless: true });
@@ -62,23 +61,40 @@ jobs:
               userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36',
             });
 
-            for (const target of targets) {
-              const page = await context.newPage();
-              const response = await page.goto(BASE + target.path, { waitUntil: 'networkidle', timeout: 90000 });
-              if (!response || !response.ok()) {
-                throw new Error(`Navigation failed for ${target.path}: ${response && response.status()}`);
-              }
-              await page.waitForTimeout(4000);
-              const body = await page.locator('body').innerText();
-              for (const label of target.required) {
-                if (!body.includes(label)) {
-                  throw new Error(`Expected label '${label}' missing on ${target.path}`);
-                }
-              }
-              console.log(`${target.path}: PASS — ${target.required.join(' | ')}`);
-              await page.screenshot({ path: target.out, fullPage: false });
-              await page.close();
-            }
+            const brand = await context.newPage();
+            const brandPath = '/?b=e.l.f.';
+            const brandBody = await gotoReady(brand, brandPath);
+            requireLabels(brandBody, ['Brand Snapshot', 'Review Share by Retailer', 'Brand Health', 'Complaint Radar', 'Rating Trend', 'Price Positioning', 'Product Portfolio Map'], brandPath);
+            await brand.screenshot({ path: 'assets/beauty/beauty-production-brand-snapshot.png', fullPage: false });
+            await brand.close();
+
+            const picker = await context.newPage();
+            const pickerPath = '/products?b=e.l.f.';
+            const pickerBody = await gotoReady(picker, pickerPath);
+            requireLabels(pickerBody, ['Product Snapshot', 'tracked products', 'Select a product'], pickerPath);
+            const firstHref = await picker.locator('.biv3-picker a[href*="p="]').first().getAttribute('href');
+            if (!firstHref) throw new Error('Could not resolve a populated product detail href from the production product picker.');
+            const productUrl = new URL(firstHref, BASE);
+            const productKey = productUrl.searchParams.get('p');
+            if (!productKey) throw new Error(`Resolved product href has no p query parameter: ${firstHref}`);
+            console.log(`Resolved first populated product: ${firstHref}`);
+            await picker.close();
+
+            const product = await context.newPage();
+            const productPath = productUrl.pathname + productUrl.search;
+            const productBody = await gotoReady(product, productPath);
+            requireLabels(productBody, ['Product Snapshot', 'Review Share by Retailer', 'Product Health', 'Complaint Radar', 'Rating Trend', 'Review Momentum (30D)', 'Voices from Real Reviews'], productPath);
+            if (productBody.includes('Select a product to open its snapshot')) throw new Error('Product detail remained in discovery state.');
+            await product.screenshot({ path: 'assets/beauty/beauty-production-product-snapshot.png', fullPage: false });
+            await product.close();
+
+            const reviews = await context.newPage();
+            const reviewPath = `/reviews?b=${encodeURIComponent('e.l.f.')}&p=${encodeURIComponent(productKey)}`;
+            const reviewBody = await gotoReady(reviews, reviewPath);
+            requireLabels(reviewBody, ['Review Explorer', 'Matching Reviews', 'Avg Rating', 'Positive / Negative Split', 'Related Issues', 'Search reviews'], reviewPath);
+            if (reviewBody.includes('Select a product above to explore its reviews.')) throw new Error('Review Explorer remained in no-product state.');
+            await reviews.screenshot({ path: 'assets/beauty/beauty-production-review-explorer.png', fullPage: false });
+            await reviews.close();
 
             await browser.close();
           })().catch((err) => {
@@ -91,7 +107,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: beauty-production-screenshots
-          path: assets/beauty/beauty-production-*.png
+          path: |
+            assets/beauty/beauty-production-brand-snapshot.png
+            assets/beauty/beauty-production-product-snapshot.png
+            assets/beauty/beauty-production-review-explorer.png
           if-no-files-found: error
 
       - name: Commit screenshots to capture branch
@@ -99,10 +118,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/beauty/beauty-production-*.png
+          git add assets/beauty/beauty-production-brand-snapshot.png assets/beauty/beauty-production-product-snapshot.png assets/beauty/beauty-production-review-explorer.png
           if git diff --cached --quiet; then
             echo "No screenshot changes to commit."
             exit 0
           fi
-          git commit -m "portfolio: capture current Beauty production surfaces [skip ci]"
+          git commit -m "portfolio: capture populated Beauty production surfaces [skip ci]"
           git push origin HEAD:portfolio/beauty-production-screenshot
