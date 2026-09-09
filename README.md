@@ -8,6 +8,15 @@ The full production repositories remain private. This public repository is the h
 
 ---
 
+## Product previews
+
+These are shipped product surfaces, not mockups. The technical case studies below explain the data and evaluation systems behind them.
+
+| NYX Aether — Baseball Intelligence | Beauty Intelligence |
+|---|---|
+| ![NYX Aether Overview](assets/screenshots/overview.png) | ![Beauty Intelligence Terminal](assets/beauty/beauty-home.png) |
+| Live MLB slate, model context, and game intelligence | Consumer-review intelligence organized into business-facing modules |
+
 ## 30-second recruiter scan
 
 | Area | Evidence in this portfolio |
@@ -124,7 +133,7 @@ The strict historical benchmark contained **120 paired games across 9 dates**. E
 
 The benchmark also exposed nondeterministic pagination in its own evaluation harness. I invalidated the first result, repaired the data-ordering contract, reproduced the cohort, and reran the comparison rather than keeping a favorable but untrustworthy result.
 
-![NYX Aether Model History](assets/screenshots/model-history.png)
+![NYX Aether Overview](assets/screenshots/overview.png)
 
 **Deep dives:** [Architecture](docs/ARCHITECTURE.md) · [Technical case study](docs/TECHNICAL_CASE_STUDY.md) · [Data engineering](docs/DATA_ENGINEERING.md) · [Model evaluation](docs/MODEL_EVALUATION.md)
 
@@ -151,6 +160,10 @@ A production consumer-review intelligence platform that turns unstructured beaut
 The strongest story is not a headline accuracy number. It is the decision to **withhold an accuracy claim until blind human labels establish it**, while still building the full annotation, cohort, adjudication, and evaluation infrastructure needed to measure it correctly.
 
 That demonstrates a different DS skill from Baseball: defining what should count, designing ground truth, protecting denominators, and translating noisy language into business metrics without collapsing query failure, low sample size, and true zero into the same value.
+
+![Beauty Intelligence — Brand Intelligence](assets/beauty/beauty-brand.png)
+
+*Brand Intelligence connects review volume, benefits, complaints, emerging signals, and market context in one decision surface.*
 
 ---
 

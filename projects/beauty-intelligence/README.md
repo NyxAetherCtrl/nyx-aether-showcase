@@ -22,6 +22,27 @@ The central DS question is not “can I run sentiment analysis?” It is: **how 
 
 ---
 
+## Product evidence
+
+### Intelligence terminal — product entry point
+
+![Beauty Intelligence Terminal](../../assets/beauty/beauty-home.png)
+
+*The product starts from business questions — what consumers value, which complaints are growing, which brands are moving, and how the market is changing — then routes into evidence-backed analytical modules.*
+
+### Brand Intelligence
+
+![Beauty Intelligence — Brand Intelligence](../../assets/beauty/beauty-brand.png)
+
+*Brand-level review volume, benefits, complaints, emerging signals, and brand-vs-market context are derived from the persisted semantic layer.*
+
+| Emerging Complaint Radar | Consumer Shift |
+|---|---|
+| ![Beauty Complaint Radar](../../assets/beauty/beauty-complaints.png) | ![Beauty Consumer Shift](../../assets/beauty/beauty-shift.png) |
+| Complaint concepts ranked with visible evidence/support | Longitudinal share-of-voice, velocity, acceleration, and lifecycle context |
+
+These screenshots are useful portfolio evidence because each surface maps directly to a DS problem described below: **information extraction → semantic aggregation → metric design → time-series / ranking logic → business decision support**.
+
 ## End-to-end DS workflow
 
 ```text

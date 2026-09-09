@@ -201,14 +201,20 @@ See [Data engineering](../../docs/DATA_ENGINEERING.md) and [Architecture](../../
 
 ## Product evidence
 
-| Model History | Game Analysis |
-|---|---|
-| ![Model History](../../assets/screenshots/model-history.png) | ![Analysis](../../assets/screenshots/analysis.png) |
-| Public grading and market context | Explainable matchup and model context |
+### Overview — the product-first view
 
-| Overview | Game Center |
+![NYX Aether Overview](../../assets/screenshots/overview.png)
+
+*The portfolio leads with the shipped product: live/upcoming games, model context, and decision-oriented baseball intelligence rather than a benchmark scorecard.*
+
+| Game Analysis | Game Center |
 |---|---|
-| ![Overview](../../assets/screenshots/overview.png) | ![Game Center](../../assets/screenshots/game-center.png) |
+| ![Game Analysis](../../assets/screenshots/analysis.png) | ![Game Center](../../assets/screenshots/game-center.png) |
+| Explainable matchup and model context | Game-level live / pregame information architecture |
+
+### Evaluation evidence
+
+The public **[Model History screenshot](../../assets/screenshots/model-history.png)** is kept as supporting evaluation evidence, not as the product hero. The benchmark numbers and their uncertainty are documented above and in [Model Evaluation](../../docs/MODEL_EVALUATION.md).
 
 ---
 
