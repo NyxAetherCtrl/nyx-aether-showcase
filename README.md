@@ -14,7 +14,7 @@ These are current shipped product surfaces captured from the live products, not 
 
 | NYX Aether — Baseball Intelligence | Beauty Intelligence |
 |---|---|
-| ![NYX Aether Overview](assets/screenshots/overview.png) | ![Beauty Intelligence — Production Brand Snapshot](assets/beauty/beauty-production-brand-snapshot.png) |
+| ![NYX Aether Overview](assets/screenshots/overview.png) | [[![Beauty Intelligence — Production Brand Snapshot](assets/beauty/beauty-production-brand-snapshot.png)](https://raw.githubusercontent.com/NyxAetherCtrl/nyx-aether-showcase/main/assets/beauty/beauty-production-brand-snapshot.png)](https://raw.githubusercontent.com/NyxAetherCtrl/nyx-aether-showcase/main/assets/beauty/beauty-production-brand-snapshot.png) |
 | Live MLB slate, model context, and game intelligence | Current production Brand Snapshot: brand health, complaint, rating, pricing, and portfolio signals |
 
 ## 30-second recruiter scan
@@ -163,7 +163,7 @@ That demonstrates a different DS skill from Baseball: defining what should count
 
 ![Beauty Intelligence — Production Brand Snapshot](assets/beauty/beauty-production-brand-snapshot.png)
 
-*The current production Brand Snapshot combines review coverage, brand health, complaint incidence, rating distribution, price positioning, and portfolio-level signals in one decision surface.*
+*The current production Brand Snapshot combines review coverage, brand health, complaint incidence, rating distribution, price positioning, and portfolio-level signals in one decision surface. Click the image to open the full-page capture directly.*
 
 ---
 
