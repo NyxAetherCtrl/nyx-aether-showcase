@@ -1,0 +1,108 @@
+name: Refresh Beauty production screenshots
+
+on:
+  push:
+    branches:
+      - portfolio/beauty-production-screenshot
+    paths:
+      - .github/workflows/refresh-beauty-production-screenshot.yml
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: portfolio/beauty-production-screenshot
+
+      - name: Install Playwright
+        shell: bash
+        run: |
+          mkdir -p /tmp/pw
+          cd /tmp/pw
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 --no-audit --no-fund
+          ./node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Capture verified production surfaces
+        shell: bash
+        run: |
+          mkdir -p assets/beauty
+          node <<'NODE'
+          const { chromium } = require('/tmp/pw/node_modules/playwright');
+
+          const BASE = 'https://beauty-intelligence-seven.vercel.app';
+          const targets = [
+            {
+              path: '/?b=e.l.f.',
+              out: 'assets/beauty/beauty-production-brand-snapshot.png',
+              required: ['Brand Snapshot', 'Review Share by Retailer', 'Brand Health', 'Complaint Radar', 'Rating Trend', 'Price Positioning', 'Product Portfolio Map'],
+            },
+            {
+              path: '/products?b=e.l.f.',
+              out: 'assets/beauty/beauty-production-products.png',
+              required: ['Product Snapshot'],
+            },
+            {
+              path: '/reviews?b=e.l.f.',
+              out: 'assets/beauty/beauty-production-reviews.png',
+              required: ['Review Explorer'],
+            },
+          ];
+
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const context = await browser.newContext({
+              viewport: { width: 1440, height: 1050 },
+              deviceScaleFactor: 1,
+              colorScheme: 'light',
+              userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36',
+            });
+
+            for (const target of targets) {
+              const page = await context.newPage();
+              const response = await page.goto(BASE + target.path, { waitUntil: 'networkidle', timeout: 90000 });
+              if (!response || !response.ok()) {
+                throw new Error(`Navigation failed for ${target.path}: ${response && response.status()}`);
+              }
+              await page.waitForTimeout(4000);
+              const body = await page.locator('body').innerText();
+              for (const label of target.required) {
+                if (!body.includes(label)) {
+                  throw new Error(`Expected label '${label}' missing on ${target.path}`);
+                }
+              }
+              console.log(`${target.path}: PASS — ${target.required.join(' | ')}`);
+              await page.screenshot({ path: target.out, fullPage: false });
+              await page.close();
+            }
+
+            await browser.close();
+          })().catch((err) => {
+            console.error(err);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Upload capture artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: beauty-production-screenshots
+          path: assets/beauty/beauty-production-*.png
+          if-no-files-found: error
+
+      - name: Commit screenshots to capture branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/beauty/beauty-production-*.png
+          if git diff --cached --quiet; then
+            echo "No screenshot changes to commit."
+            exit 0
+          fi
+          git commit -m "portfolio: capture current Beauty production surfaces [skip ci]"
+          git push origin HEAD:portfolio/beauty-production-screenshot
