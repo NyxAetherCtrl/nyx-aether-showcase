@@ -1,0 +1,140 @@
+name: Polish Portfolio Visual Evidence
+
+on:
+  push:
+    branches:
+      - portfolio/visual-evidence-pass
+    paths:
+      - .github/workflows/polish-visual-readmes.yml
+
+permissions:
+  contents: write
+
+jobs:
+  polish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout showcase branch
+        uses: actions/checkout@v4
+        with:
+          ref: portfolio/visual-evidence-pass
+      - name: Update visual hierarchy
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          # ---------- Root portfolio ----------
+          p = Path('README.md')
+          s = p.read_text()
+          anchor = "---\n\n## 30-second recruiter scan"
+          visual = """---
+
+## Product previews
+
+These are shipped product surfaces, not mockups. The technical case studies below explain the data and evaluation systems behind them.
+
+| NYX Aether — Baseball Intelligence | Beauty Intelligence |
+|---|---|
+| ![NYX Aether Overview](assets/screenshots/overview.png) | ![Beauty Intelligence Terminal](assets/beauty/beauty-home.png) |
+| Live MLB slate, model context, and game intelligence | Consumer-review intelligence organized into business-facing modules |
+
+"""
+          if anchor not in s:
+              raise SystemExit('root recruiter anchor not found')
+          s = s.replace(anchor, visual + "## 30-second recruiter scan", 1)
+          old = "![NYX Aether Model History](assets/screenshots/model-history.png)"
+          if old not in s:
+              raise SystemExit('root model-history image not found')
+          s = s.replace(old, "![NYX Aether Overview](assets/screenshots/overview.png)", 1)
+          beauty_anchor = "That demonstrates a different DS skill from Baseball: defining what should count, designing ground truth, protecting denominators, and translating noisy language into business metrics without collapsing query failure, low sample size, and true zero into the same value.\n"
+          if beauty_anchor not in s:
+              raise SystemExit('root beauty anchor not found')
+          s = s.replace(beauty_anchor, beauty_anchor + "\n![Beauty Intelligence — Brand Intelligence](assets/beauty/beauty-brand.png)\n\n*Brand Intelligence connects review volume, benefits, complaints, emerging signals, and market context in one decision surface.*\n", 1)
+          p.write_text(s)
+
+          # ---------- Baseball case study ----------
+          p = Path('projects/baseball/README.md')
+          s = p.read_text()
+          old_block = """## Product evidence
+
+| Model History | Game Analysis |
+|---|---|
+| ![Model History](../../assets/screenshots/model-history.png) | ![Analysis](../../assets/screenshots/analysis.png) |
+| Public grading and market context | Explainable matchup and model context |
+
+| Overview | Game Center |
+|---|---|
+| ![Overview](../../assets/screenshots/overview.png) | ![Game Center](../../assets/screenshots/game-center.png) |
+
+---
+"""
+          new_block = """## Product evidence
+
+### Overview — the product-first view
+
+![NYX Aether Overview](../../assets/screenshots/overview.png)
+
+*The portfolio leads with the shipped product: live/upcoming games, model context, and decision-oriented baseball intelligence rather than a benchmark scorecard.*
+
+| Game Analysis | Game Center |
+|---|---|
+| ![Game Analysis](../../assets/screenshots/analysis.png) | ![Game Center](../../assets/screenshots/game-center.png) |
+| Explainable matchup and model context | Game-level live / pregame information architecture |
+
+### Evaluation evidence
+
+The public **[Model History screenshot](../../assets/screenshots/model-history.png)** is kept as supporting evaluation evidence, not as the product hero. The benchmark numbers and their uncertainty are documented above and in [Model Evaluation](../../docs/MODEL_EVALUATION.md).
+
+---
+"""
+          if old_block not in s:
+              raise SystemExit('baseball product-evidence block not found')
+          s = s.replace(old_block, new_block, 1)
+          p.write_text(s)
+
+          # ---------- Beauty case study ----------
+          p = Path('projects/beauty-intelligence/README.md')
+          s = p.read_text()
+          anchor = "---\n\n## End-to-end DS workflow"
+          visual = """---
+
+## Product evidence
+
+### Intelligence terminal — product entry point
+
+![Beauty Intelligence Terminal](../../assets/beauty/beauty-home.png)
+
+*The product starts from business questions — what consumers value, which complaints are growing, which brands are moving, and how the market is changing — then routes into evidence-backed analytical modules.*
+
+### Brand Intelligence
+
+![Beauty Intelligence — Brand Intelligence](../../assets/beauty/beauty-brand.png)
+
+*Brand-level review volume, benefits, complaints, emerging signals, and brand-vs-market context are derived from the persisted semantic layer.*
+
+| Emerging Complaint Radar | Consumer Shift |
+|---|---|
+| ![Beauty Complaint Radar](../../assets/beauty/beauty-complaints.png) | ![Beauty Consumer Shift](../../assets/beauty/beauty-shift.png) |
+| Complaint concepts ranked with visible evidence/support | Longitudinal share-of-voice, velocity, acceleration, and lifecycle context |
+
+These screenshots are useful portfolio evidence because each surface maps directly to a DS problem described below: **information extraction → semantic aggregation → metric design → time-series / ranking logic → business decision support**.
+
+"""
+          if anchor not in s:
+              raise SystemExit('beauty workflow anchor not found')
+          s = s.replace(anchor, visual + "## End-to-end DS workflow", 1)
+          p.write_text(s)
+          PY
+
+          # Remove one-off transfer workflows before this branch is merged.
+          rm -f .github/workflows/import-beauty-screenshots.yml
+          rm -f .github/workflows/polish-visual-readmes.yml
+
+      - name: Commit portfolio visual pass
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'docs(portfolio): lead with product visuals'
+          git push origin HEAD:portfolio/visual-evidence-pass
