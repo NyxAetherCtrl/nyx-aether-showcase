@@ -1,21 +1,44 @@
-# Data Science & Intelligence Portfolio
+# Samuel Choi — Data Science & Intelligence Portfolio
 
-**Two production data products spanning probabilistic forecasting, NLP, consumer intelligence, experimentation, and data engineering.**
+**Two production data products demonstrating predictive ML, NLP / information extraction, statistical evaluation, analytics engineering, and MLOps.**
 
-Built and operated end-to-end by **Samuel Choi**. The production source repositories remain private; this public repository is the portfolio layer — architecture, methodology, evaluation discipline, product evidence, and the data-science decisions that matter.
+[Baseball Intelligence](projects/baseball/README.md) · [Beauty Intelligence](projects/beauty-intelligence/README.md) · [Baseball live product](https://baseball.nyx-aether.com) · [Beauty live product](https://beauty-intelligence-seven.vercel.app)
 
-| Project | Data-science focus | Product |
-|---|---|---|
-| ⚾ **[NYX Aether — Baseball Intelligence](projects/baseball/README.md)** | Predictive ML · probabilistic modeling · temporal validation · calibration · statistical inference · champion–challenger evaluation · MLOps | [Live product](https://baseball.nyx-aether.com) |
-| ◇ **[Beauty Intelligence](projects/beauty-intelligence/README.md)** | NLP / information extraction · taxonomy engineering · sentiment & complaint intelligence · human-ground-truth evaluation · time-series analytics · B2B data product | [Live product](https://beauty-intelligence-seven.vercel.app) |
+The full production repositories remain private. This public repository is the hiring-facing layer: methodology, architecture, evaluation discipline, verified results, product evidence, and the decisions I can defend in an interview.
 
 ---
 
-## Why these two projects belong together
+## 30-second recruiter scan
 
-The domains are intentionally different. Baseball tests whether I can build a **forward-looking probabilistic model** without leaking the future. Beauty Intelligence tests whether I can turn **unstructured consumer language** into defensible product and market signals.
+| Area | Evidence in this portfolio |
+|---|---|
+| **Predictive ML** | Binary classification, L2-regularized logistic regression, feature engineering, calibrated win probabilities |
+| **NLP / Semantic Analytics** | Multi-label concept extraction, taxonomy design, evidence spans, negation/context handling, sentiment/assertion semantics |
+| **Experimentation & Evaluation** | Champion–challenger testing, paired model evaluation, walk-forward validation, holdout governance, blind human annotation |
+| **Statistics** | Log loss, Brier score, AUC, ECE, bootstrap confidence intervals, paired/cluster bootstrap, sign testing, macro-F1, confusion matrices |
+| **Time-aware Data Science** | Point-in-time features, look-ahead bias prevention, out-of-time testing, longitudinal concept rollups |
+| **Analytics Engineering** | Explicit denominators, cohort design, support thresholds, metric semantics, time-series aggregation |
+| **Data Engineering** | Python, SQL, PostgreSQL/Supabase, multi-source ingestion, incremental pipelines, idempotency, reconciliation, data-quality tests |
+| **Production ML / Data Products** | Model versioning, shadow evaluation, feature gating, CI/CD, monitoring, rollback, Next.js/Vercel product delivery |
 
-The common workflow is the part I want a hiring team to see:
+### Roles this portfolio is designed to support
+
+**Data Scientist · Product / Growth Data Scientist · Applied Data Scientist · Analytics Engineer · ML-adjacent Data Product roles**
+
+The strongest fit is for roles that value not only modeling, but also **experimental design, data quality, metric correctness, reproducibility, and shipping analytical systems into production**.
+
+---
+
+## Featured projects
+
+| Project | Core DS problem | Strongest hiring signals |
+|---|---|---|
+| ⚾ **[NYX Aether — Baseball Intelligence](projects/baseball/README.md)** | Estimate pregame MLB win probability using only information available at prediction time | Predictive ML · temporal validation · calibration · statistical inference · champion–challenger evaluation · MLOps |
+| ◇ **[Beauty Intelligence](projects/beauty-intelligence/README.md)** | Convert noisy consumer reviews into defensible product, complaint, brand, and market intelligence | NLP / information extraction · taxonomy engineering · human-ground-truth evaluation · time-series analytics · metric design · B2B data product |
+
+The domains are intentionally different. Baseball tests whether I can build a **forward-looking probabilistic model without leaking the future**. Beauty Intelligence tests whether I can turn **unstructured language into stable, auditable business signals**.
+
+Both follow the same end-to-end pattern:
 
 ```text
 raw external data
@@ -26,7 +49,7 @@ feature / semantic representation
       ↓
 model or analytical engine
       ↓
-evaluation with explicit denominators
+evaluation with explicit cohorts and denominators
       ↓
 versioned production pipeline
       ↓
@@ -35,38 +58,33 @@ user-facing decision product
 monitoring, error analysis, iteration
 ```
 
-These are not notebook-only demos. Both projects connect data methodology to a production product and both treat **measurement integrity as part of the model**, not as documentation added afterward.
-
 ---
 
 ## Data Science skill map
 
 | Skill | Baseball Intelligence | Beauty Intelligence |
 |---|---|---|
-| **Problem framing** | Estimate pregame MLB win probability and explain uncertainty | Convert customer reviews into product, complaint, brand, and market intelligence |
-| **Supervised ML** | Binary classification with L2-regularized logistic regression | — |
-| **NLP / Information Extraction** | — | Multi-label concept extraction from review text with evidence spans |
-| **Feature Engineering** | Rolling form, run differential, season strength, rest, home-field and point-in-time signals | Concept taxonomy, phrase/context rules, sentiment/assertion states, review-level denominators |
-| **Temporal Validation** | Walk-forward / out-of-time train → validation → test protocol | Time-indexed review aggregation and trend windows |
-| **Leakage Prevention** | Point-in-time reconstruction, immutable pregame records, ingest-time controls | Versioned semantic tables, separate evaluation data, no prediction exposure during blind annotation |
-| **Probability Calibration** | Platt scaling, isotonic regression, identity calibration | — |
-| **Statistical Inference** | Bootstrap CIs, paired bootstrap, cluster-aware uncertainty, sign testing | Error slices and uncertainty-aware evaluation design rather than unqualified accuracy claims |
-| **Experiment / Version Evaluation** | Champion–challenger paired benchmarking: Engine 2.2 vs 3.0 | Side-by-side V2/V3 semantic engine rollout with feature gates and rollback boundaries |
-| **Human Ground Truth** | Final game outcomes provide objective labels | Blind human annotation pipeline with representative + challenge cohorts |
-| **Evaluation Metrics** | Log loss, Brier, AUC, ECE, accuracy | Concept detection, span IoU/exact match, sentiment/assertion accuracy & macro-F1, confusion matrices, strict end-to-end metrics |
-| **Sampling / Cohort Design** | Strict paired-game eligibility and date-aware evaluation cohorts | Deterministic proportional stratification plus targeted challenge-set sampling |
-| **Time-Series Analytics** | Rolling historical windows and prospective grading | Monthly concept/sentiment rollups, emerging-signal and complaint trend analysis |
-| **Metric Design** | Proper scoring rules and cohort-matched comparison | Explicit review denominators, support thresholds, typed unavailable/low-sample states |
-| **Data Engineering** | Multi-source ingestion, append-only history, deterministic paging, reconciliation | Multi-retailer collection, incremental tagging, dirty-month rollups, idempotent recovery |
-| **Data Quality** | Point-in-time audits, pagination regression guards, fail-closed publication | Denominator tests, read-failure vs true-empty states, crawler recovery, semantic drift guards |
-| **Model / Engine Governance** | Frozen protocols, content-addressed artifacts, test-set access controls | Versioned taxonomy, frozen evaluation identity, blind predictions, read/write feature gates |
-| **Production ML / MLOps** | Shadow candidate, official champion, scheduled scoring, monitoring, rollback | Offline tagging + persisted semantic layer + production serving, V2/V3 isolation and rollback |
-| **Product Analytics** | Public forecast history and market-context comparison | Brand intelligence, peer benchmarking, product complaint radar, consumer-love metrics |
+| **Problem Framing** | Pregame win probability under strict information-time constraints | Review text → product / complaint / brand intelligence |
+| **Supervised ML** | Binary classification with L2 logistic regression | — |
+| **NLP / Information Extraction** | — | Multi-label concept extraction with supporting evidence spans |
+| **Feature / Representation Engineering** | Rolling form, run differential, season strength, rest, home-field, point-in-time signals | Versioned concept taxonomy, phrase/context rules, sentiment/assertion states |
+| **Temporal Validation** | Walk-forward train → validation → test; out-of-time holdout | Time-indexed review aggregation and trend windows |
+| **Leakage Prevention** | Point-in-time reconstruction, immutable pregame records, ingest-time controls | Prediction-hidden annotation, versioned semantic tables, frozen evaluation identity |
+| **Calibration** | Identity, Platt scaling, isotonic regression; validation-only selection | — |
+| **Statistical Inference** | Bootstrap CIs, paired bootstrap, date-cluster bootstrap, sign test | Slice-based error analysis and human-ground-truth evaluation design |
+| **Experiment / Version Evaluation** | Engine 2.2 vs 3.0 champion–challenger paired benchmark | V2/V3 side-by-side semantic-engine validation with feature gates |
+| **Human Ground Truth** | Final game outcomes provide objective labels | Blind annotation with representative + challenge cohorts |
+| **Evaluation Metrics** | Log loss, Brier, AUC, ECE, accuracy | Concept detection, span IoU/exact match, sentiment/assertion accuracy, macro-F1, confusion matrices |
+| **Cohort / Sampling Design** | Same-game paired eligibility, date-aware evaluation cohorts | Proportional stratification plus targeted challenge-set sampling |
+| **Time-Series Analytics** | Rolling historical windows, prospective grading | Monthly concept/sentiment rollups, emerging-signal analysis |
+| **Metric Design** | Proper scoring rules and cohort-matched comparison | Review-level denominators, distinct-review counting, support thresholds, typed unavailable states |
+| **Data Engineering** | Multi-source ingestion, append-only history, deterministic pagination, reconciliation | Multi-retailer collection, incremental tagging, dirty-window rollups, idempotent recovery |
+| **Production / MLOps** | Model artifacts, shadow challenger, production authority, monitoring, rollback | Persisted semantic layer, V2/V3 isolation, read gates, rollback boundaries |
 
-### Skills demonstrated across the portfolio
+### Skills I can defend in an interview
 
 **Machine Learning & Statistics**  
-Binary Classification · Logistic Regression · L2 Regularization · Probability Calibration · Platt Scaling · Isotonic Regression · Feature Engineering · Model Selection · Bootstrap Confidence Intervals · Paired Model Evaluation · Statistical Significance · Error Analysis
+Binary Classification · Logistic Regression · L2 Regularization · Feature Engineering · Probability Calibration · Platt Scaling · Isotonic Regression · Model Selection · Bootstrap Confidence Intervals · Paired Model Evaluation · Statistical Significance · Error Analysis
 
 **Experimentation & Evaluation**  
 Champion–Challenger Testing · Walk-Forward Validation · Out-of-Time Testing · Prospective Validation · Holdout Governance · Stratified Sampling · Challenge Sets · Human-in-the-Loop Evaluation · Macro-F1 · Confusion Matrices · Span IoU
@@ -74,63 +92,75 @@ Champion–Challenger Testing · Walk-Forward Validation · Out-of-Time Testing 
 **NLP & Consumer Intelligence**  
 Information Extraction · Multi-Label Concept Tagging · Taxonomy / Ontology Design · Negation & Context Handling · Sentiment Analysis · Assertion Classification · Evidence Extraction · Complaint Intelligence · Trend Detection
 
-**Data Engineering & Analytics Engineering**  
+**Analytics & Data Engineering**  
 Python · SQL · PostgreSQL · Supabase · ETL / ELT · Incremental Pipelines · Idempotency · Data Lineage · Point-in-Time Data · Data Quality Testing · Metric Semantics · Denominator Design · Time-Series Aggregation
 
-**Production & Product**  
-MLOps · Model Versioning · Shadow Deployment · Feature Gating · CI/CD · GitHub Actions · Cloudflare Workers · Vercel · Next.js · TypeScript · Monitoring · Fail-Closed Systems · Reproducible Pipelines
+**Production**  
+MLOps · Model Versioning · Shadow Evaluation · Feature Gating · CI/CD · GitHub Actions · Cloudflare Workers · Vercel · Next.js · TypeScript · Monitoring · Reproducible Pipelines
 
-> **Deliberate non-claim:** the Baseball champion–challenger benchmark is not presented as an A/B test because games were not randomly assigned to treatments. Beauty Intelligence does not present semantic “accuracy” as human-validated until the blind ground-truth process supports that claim. Correct experiment labeling is part of the work.
+> **Deliberate non-claims:** Baseball Engine 2.2 vs 3.0 is not called an A/B test because games were not randomly assigned to treatments. Beauty Intelligence does not claim human-validated semantic accuracy before blind human ground truth supports it. I would rather label an experiment correctly than add a stronger-sounding keyword.
 
 ---
 
 # Project 1 — NYX Aether Baseball Intelligence
 
-[**Open the Baseball case study →**](projects/baseball/README.md)
+[**Open the full Baseball case study →**](projects/baseball/README.md)
 
-A production MLB analytics and forecasting platform built around one difficult requirement: **a prediction must be reproducible using only information that was available at prediction time.**
+A production MLB analytics and forecasting platform built around one requirement: **every forecast must be reproducible from information that actually existed before first pitch.**
 
-### Data-science highlights
+### Hiring signal
 
 - Built a probabilistic binary-classification pipeline for MLB game outcomes.
 - Designed **point-in-time feature engineering** and walk-forward validation to prevent look-ahead bias.
-- Separated model training from **probability calibration** and compared identity, Platt, and isotonic calibration using validation-only evidence.
-- Evaluated predictions with proper scoring rules — **log loss and Brier score** — alongside AUC, ECE, and accuracy.
-- Built a **paired champion–challenger benchmark** so Engine 2.2 and Engine 3.0 are compared on the exact same games.
-- Quantified uncertainty with bootstrap confidence intervals rather than promoting a model from a point estimate alone.
-- Operated prospective prediction capture, grading, versioning, monitoring, rollback, and cloud scheduling.
+- Compared identity, Platt, and isotonic **probability calibration** using validation-only evidence.
+- Evaluated predictions with **log loss and Brier score** as proper scoring rules, plus AUC, ECE, and accuracy.
+- Built a **paired champion–challenger benchmark** so Engine 2.2 and Engine 3.0 are evaluated on identical games.
+- Quantified uncertainty with bootstrap confidence intervals instead of promoting from point estimates alone.
+- Operated prospective scoring, grading, versioning, monitoring, rollback, and cloud scheduling.
 
-### One result worth discussing in an interview
+### Interview result
 
-The validated strict historical benchmark contained **120 paired games across 9 dates**. Engine 3.0 improved log loss and Brier score directionally, but the paired 95% confidence intervals crossed zero, so the published conclusion remained **“directionally better, not statistically established.”** The benchmark also caught a nondeterministic pagination defect in its own evaluation harness, invalidated the first run, fixed the data-ordering contract, and reran from scratch.
+The strict historical benchmark contained **120 paired games across 9 dates**. Engine 3.0 improved log loss and Brier score directionally, but the paired 95% confidence intervals crossed zero. The published conclusion stayed **“directionally better, not statistically established.”**
 
-That is a better representation of the project than “my model got a higher accuracy.”
+The benchmark also exposed nondeterministic pagination in its own evaluation harness. I invalidated the first result, repaired the data-ordering contract, reproduced the cohort, and reran the comparison rather than keeping a favorable but untrustworthy result.
 
 ![NYX Aether Model History](assets/screenshots/model-history.png)
 
-**Deep dives:** [Architecture](docs/ARCHITECTURE.md) · [Technical case study](docs/TECHNICAL_CASE_STUDY.md) · [Data engineering](docs/DATA_ENGINEERING.md) · [Model evaluation](docs/MODEL_EVALUATION.md) · [Project evolution](docs/PROJECT_EVOLUTION.md)
+**Deep dives:** [Architecture](docs/ARCHITECTURE.md) · [Technical case study](docs/TECHNICAL_CASE_STUDY.md) · [Data engineering](docs/DATA_ENGINEERING.md) · [Model evaluation](docs/MODEL_EVALUATION.md)
 
 ---
 
 # Project 2 — Beauty Intelligence
 
-[**Open the Beauty Intelligence case study →**](projects/beauty-intelligence/README.md)
+[**Open the full Beauty Intelligence case study →**](projects/beauty-intelligence/README.md)
 
-A production consumer-review intelligence platform that turns large volumes of unstructured beauty reviews into structured concepts, sentiment, complaint evidence, product signals, brand comparisons, and longitudinal trends.
+A production consumer-review intelligence platform that turns unstructured beauty reviews into structured concepts, complaint evidence, product signals, brand comparisons, and longitudinal trends.
 
-### Data-science highlights
+### Hiring signal
 
-- Designed a domain taxonomy and **multi-label concept extraction** layer for beauty-review language.
-- Built semantic handling for phrase context, negation, assertion state, and sentiment instead of treating keyword matches as truth.
-- Materialized review-level concept mentions and monthly time-series rollups so analytics requests do not rerun NLP on every page load.
-- Built complaint ranking, brand/product intelligence, comparable-peer selection, and explicit metric-denominator rules.
-- Designed a **blind human-ground-truth evaluation system**: predictions are hidden from annotators, representative and challenge cohorts are separated, and evaluation aligns predicted/human evidence spans before scoring.
-- Evaluation supports concept detection, span exactness/IoU, sentiment and assertion accuracy, macro-F1, per-class metrics, confusion matrices, and strict end-to-end correctness.
-- Built versioned V2/V3 data paths and feature gates so a new semantic engine can be evaluated without silently replacing the incumbent.
+- Designed a domain taxonomy and **multi-label information-extraction** layer for beauty-review language.
+- Added phrase context, negation, assertion state, sentiment, and evidence spans instead of treating keyword matches as truth.
+- Materialized review-level semantic mentions and monthly rollups so analytics pages consume persisted evidence rather than rerunning text interpretation per request.
+- Built complaint ranking, peer benchmarking, product-family aggregation, and explicit **metric-denominator rules**.
+- Designed a **blind human-ground-truth evaluation system** with representative and challenge cohorts.
+- Evaluation supports concept detection, span exactness/IoU, macro-F1, confusion matrices, and strict end-to-end correctness.
+- Built V2/V3 side-by-side data paths and feature gates so a new semantic engine can be evaluated and rolled back safely.
 
-### Why this matters for Data Science
+### Interview result
 
-This project demonstrates a different side of DS from Baseball: the hard problem is not predicting a clean binary label. It is defining **what should count**, building a reproducible semantic representation, creating ground truth, protecting denominators, distinguishing “no signal” from “query failed,” and translating noisy language into business decisions without overstating model quality.
+The strongest story is not a headline accuracy number. It is the decision to **withhold an accuracy claim until blind human labels establish it**, while still building the full annotation, cohort, adjudication, and evaluation infrastructure needed to measure it correctly.
+
+That demonstrates a different DS skill from Baseball: defining what should count, designing ground truth, protecting denominators, and translating noisy language into business metrics without collapsing query failure, low sample size, and true zero into the same value.
+
+---
+
+## What makes these projects credible
+
+- **Production systems, not notebook-only demos.** Both projects connect methodology to live user-facing products.
+- **Evaluation is designed before promotion.** Model/engine changes are compared under explicit cohorts and acceptance rules.
+- **Failures become tests.** Pagination, encoding, collection, denominator, and availability failures were converted into regression guards.
+- **Metrics keep their denominators.** Comparisons are not presented as apples-to-apples when their cohorts differ.
+- **Source remains private by design.** This repository exposes enough methodology to evaluate the work without publishing credentials, raw review data, operational runbooks, or complete model/engine internals.
 
 ---
 
@@ -138,30 +168,10 @@ This project demonstrates a different side of DS from Baseball: the hard problem
 
 **Python** · **SQL** · **PostgreSQL / Supabase** · **pandas** · **scikit-learn** · **pytest** · **TypeScript** · **Next.js / React** · **GitHub Actions** · **Cloudflare Workers** · **Vercel**
 
-The two systems use different subsets of the stack; the project case studies distinguish the modeling and production methods actually used in each one.
-
----
-
-## Source availability
-
-The full production repositories are private. They include operational configuration, internal runbooks, model/engine internals, raw-data handling, and deployment machinery that are not necessary for portfolio review.
-
-This public showcase intentionally exposes the parts that are useful for technical evaluation:
-
-- system architecture and data flow;
-- modeling / semantic methodology;
-- evaluation design and limitations;
-- statistical reasoning and metric definitions;
-- representative production incidents and how they changed the system;
-- screenshots and live products;
-- evidence of reproducibility, testing, and governance.
-
-This is not intended to be an open-source distribution of either product.
-
 ---
 
 ## About
 
-Designed, built, and operated by **Samuel Choi**. I am using these projects to demonstrate end-to-end capability across **data science, product analytics, analytics engineering, and ML-adjacent data products** — from raw data and methodology through validation and production delivery.
+Designed, built, and operated by **Samuel Choi**. These projects demonstrate end-to-end capability across **data science, product analytics, analytics engineering, and production ML/data products** — from raw data and problem definition through evaluation and production delivery.
 
 AI coding tools were used as implementation accelerators. Problem framing, architecture, data definitions, evaluation policy, acceptance criteria, and production decisions are represented here as explicit, testable system contracts rather than as tool-generated claims.
