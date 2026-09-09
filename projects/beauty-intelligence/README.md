@@ -26,7 +26,7 @@ The central DS question is not “can I run sentiment analysis?” It is: **how 
 
 These screenshots were captured from the **live production product**, not from the older screenshot folder in the private source repository.
 
-**Viewing tip:** GitHub’s PNG file viewer fits images by width, so tall screenshots can look cropped inside the browser window. Click any screenshot below to open the raw full-page image directly.
+**Viewing tip:** The inline images are compact previews. Click any screenshot to open the complete full-page production capture.
 
 ### Production Brand Snapshot
 
