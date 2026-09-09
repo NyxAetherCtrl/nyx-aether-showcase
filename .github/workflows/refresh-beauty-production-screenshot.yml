@@ -1,4 +1,4 @@
-name: Refresh Beauty production screenshots
+name: Finalize Beauty production portfolio evidence
 
 on:
   push:
@@ -11,117 +11,111 @@ permissions:
   contents: write
 
 jobs:
-  capture:
+  finalize:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: portfolio/beauty-production-screenshot
 
-      - name: Install Playwright
+      - name: Update portfolio copy and remove stale evidence
         shell: bash
         run: |
-          mkdir -p /tmp/pw
-          cd /tmp/pw
-          npm init -y >/dev/null 2>&1
-          npm install playwright@1.55.0 --no-audit --no-fund
-          ./node_modules/.bin/playwright install --with-deps chromium
+          python <<'PY'
+          from pathlib import Path
 
-      - name: Capture verified production surfaces
+          root = Path('README.md')
+          text = root.read_text(encoding='utf-8')
+
+          old_preview = '''These are shipped product surfaces, not mockups. The technical case studies below explain the data and evaluation systems behind them.
+
+| NYX Aether — Baseball Intelligence | Beauty Intelligence |
+|---|---|
+| ![NYX Aether Overview](assets/screenshots/overview.png) | ![Beauty Intelligence Terminal](assets/beauty/beauty-home.png) |
+| Live MLB slate, model context, and game intelligence | Consumer-review intelligence organized into business-facing modules |'''
+          new_preview = '''These are current shipped product surfaces captured from the live products, not mockups. The technical case studies below explain the data and evaluation systems behind them.
+
+| NYX Aether — Baseball Intelligence | Beauty Intelligence |
+|---|---|
+| ![NYX Aether Overview](assets/screenshots/overview.png) | ![Beauty Intelligence — Production Brand Snapshot](assets/beauty/beauty-production-brand-snapshot.png) |
+| Live MLB slate, model context, and game intelligence | Current production Brand Snapshot: brand health, complaint, rating, pricing, and portfolio signals |'''
+          if old_preview not in text:
+              raise SystemExit('Root product-preview block not found exactly; refusing partial edit.')
+          text = text.replace(old_preview, new_preview, 1)
+
+          old_lower = '''![Beauty Intelligence — Brand Intelligence](assets/beauty/beauty-brand.png)
+
+*Brand Intelligence connects review volume, benefits, complaints, emerging signals, and market context in one decision surface.*'''
+          new_lower = '''![Beauty Intelligence — Production Brand Snapshot](assets/beauty/beauty-production-brand-snapshot.png)
+
+*The current production Brand Snapshot combines review coverage, brand health, complaint incidence, rating distribution, price positioning, and portfolio-level signals in one decision surface.*'''
+          if old_lower not in text:
+              raise SystemExit('Root Beauty image block not found exactly; refusing partial edit.')
+          text = text.replace(old_lower, new_lower, 1)
+          root.write_text(text, encoding='utf-8')
+
+          beauty = Path('projects/beauty-intelligence/README.md')
+          text = beauty.read_text(encoding='utf-8')
+          start = text.index('## Product evidence\n')
+          end = text.index('## End-to-end DS workflow\n')
+          replacement = '''## Product evidence
+
+These screenshots were captured from the **live production product**, not from the older screenshot folder in the private source repository.
+
+### Production Brand Snapshot
+
+![Beauty Intelligence — Production Brand Snapshot](../../assets/beauty/beauty-production-brand-snapshot.png)
+
+*The current production Brand Snapshot brings review coverage, retailer mix, brand health, complaint incidence, rating distribution, price positioning, and product-portfolio signals into one decision surface.*
+
+### Product Snapshot
+
+![Beauty Intelligence — Production Product Snapshot](../../assets/beauty/beauty-production-product-snapshot.png)
+
+*Product-level analysis carries the same evidence model into product health, complaint radar, retailer coverage, rating trends, review momentum, and real-review voices.*
+
+### Review Explorer
+
+![Beauty Intelligence — Production Review Explorer](../../assets/beauty/beauty-production-review-explorer.png)
+
+*The Review Explorer links summary metrics back to filterable review evidence, related issues, retailer/rating facets, and searchable consumer language.*
+
+Together these production surfaces show the analytical chain: **review evidence → semantic extraction → governed metrics → brand/product analytics → decision-facing production UI**.
+
+'''
+          text = text[:start] + replacement + text[end:]
+          beauty.write_text(text, encoding='utf-8')
+          PY
+
+          rm -f \
+            assets/beauty/beauty-home.png \
+            assets/beauty/beauty-brand.png \
+            assets/beauty/beauty-complaints.png \
+            assets/beauty/beauty-shift.png \
+            assets/beauty/beauty-production-products.png \
+            assets/beauty/beauty-production-reviews.png
+
+          # This capture/finalization workflow is one-off portfolio plumbing and must
+          # not remain in the finished hiring-facing branch.
+          rm -f .github/workflows/refresh-beauty-production-screenshot.yml
+
+      - name: Verify final references
         shell: bash
         run: |
-          mkdir -p assets/beauty
-          node <<'NODE'
-          const { chromium } = require('/tmp/pw/node_modules/playwright');
+          test -f assets/beauty/beauty-production-brand-snapshot.png
+          test -f assets/beauty/beauty-production-product-snapshot.png
+          test -f assets/beauty/beauty-production-review-explorer.png
+          ! grep -R "beauty-home.png\|beauty-brand.png\|beauty-complaints.png\|beauty-shift.png\|beauty-production-products.png\|beauty-production-reviews.png" README.md projects/beauty-intelligence/README.md
+          grep -q "beauty-production-brand-snapshot.png" README.md
+          grep -q "beauty-production-product-snapshot.png" projects/beauty-intelligence/README.md
+          grep -q "beauty-production-review-explorer.png" projects/beauty-intelligence/README.md
+          git status --short
 
-          const BASE = 'https://beauty-intelligence-seven.vercel.app';
-
-          async function gotoReady(page, path) {
-            const response = await page.goto(BASE + path, { waitUntil: 'networkidle', timeout: 90000 });
-            if (!response || !response.ok()) {
-              throw new Error(`Navigation failed for ${path}: ${response && response.status()}`);
-            }
-            await page.waitForTimeout(4000);
-            return page.locator('body').innerText();
-          }
-
-          function requireLabels(body, labels, path) {
-            for (const label of labels) {
-              if (!body.includes(label)) throw new Error(`Expected label '${label}' missing on ${path}`);
-            }
-            console.log(`${path}: PASS — ${labels.join(' | ')}`);
-          }
-
-          (async () => {
-            const browser = await chromium.launch({ headless: true });
-            const context = await browser.newContext({
-              viewport: { width: 1440, height: 1050 },
-              deviceScaleFactor: 1,
-              colorScheme: 'light',
-              userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36',
-            });
-
-            const brand = await context.newPage();
-            const brandPath = '/?b=e.l.f.';
-            const brandBody = await gotoReady(brand, brandPath);
-            requireLabels(brandBody, ['Brand Snapshot', 'Review Share by Retailer', 'Brand Health', 'Complaint Radar', 'Rating Trend', 'Price Positioning', 'Product Portfolio Map'], brandPath);
-            await brand.screenshot({ path: 'assets/beauty/beauty-production-brand-snapshot.png', fullPage: false });
-            await brand.close();
-
-            const picker = await context.newPage();
-            const pickerPath = '/products?b=e.l.f.';
-            const pickerBody = await gotoReady(picker, pickerPath);
-            requireLabels(pickerBody, ['Product Snapshot', 'tracked products', 'Select a product'], pickerPath);
-            const firstHref = await picker.locator('.biv3-picker a[href*="p="]').first().getAttribute('href');
-            if (!firstHref) throw new Error('Could not resolve a populated product detail href from the production product picker.');
-            const productUrl = new URL(firstHref, BASE);
-            const productKey = productUrl.searchParams.get('p');
-            if (!productKey) throw new Error(`Resolved product href has no p query parameter: ${firstHref}`);
-            console.log(`Resolved first populated product: ${firstHref}`);
-            await picker.close();
-
-            const product = await context.newPage();
-            const productPath = productUrl.pathname + productUrl.search;
-            const productBody = await gotoReady(product, productPath);
-            requireLabels(productBody, ['Product Snapshot', 'Review Share by Retailer', 'Product Health', 'Complaint Radar', 'Rating Trend', 'Review Momentum (30D)', 'Voices from Real Reviews'], productPath);
-            if (productBody.includes('Select a product to open its snapshot')) throw new Error('Product detail remained in discovery state.');
-            await product.screenshot({ path: 'assets/beauty/beauty-production-product-snapshot.png', fullPage: false });
-            await product.close();
-
-            const reviews = await context.newPage();
-            const reviewPath = `/reviews?b=${encodeURIComponent('e.l.f.')}&p=${encodeURIComponent(productKey)}`;
-            const reviewBody = await gotoReady(reviews, reviewPath);
-            requireLabels(reviewBody, ['Review Explorer', 'Matching Reviews', 'Avg Rating', 'Positive / Negative Split', 'Related Issues', 'Search reviews'], reviewPath);
-            if (reviewBody.includes('Select a product above to explore its reviews.')) throw new Error('Review Explorer remained in no-product state.');
-            await reviews.screenshot({ path: 'assets/beauty/beauty-production-review-explorer.png', fullPage: false });
-            await reviews.close();
-
-            await browser.close();
-          })().catch((err) => {
-            console.error(err);
-            process.exit(1);
-          });
-          NODE
-
-      - name: Upload capture artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: beauty-production-screenshots
-          path: |
-            assets/beauty/beauty-production-brand-snapshot.png
-            assets/beauty/beauty-production-product-snapshot.png
-            assets/beauty/beauty-production-review-explorer.png
-          if-no-files-found: error
-
-      - name: Commit screenshots to capture branch
+      - name: Commit finalized portfolio evidence
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/beauty/beauty-production-brand-snapshot.png assets/beauty/beauty-production-product-snapshot.png assets/beauty/beauty-production-review-explorer.png
-          if git diff --cached --quiet; then
-            echo "No screenshot changes to commit."
-            exit 0
-          fi
-          git commit -m "portfolio: capture populated Beauty production surfaces [skip ci]"
+          git add -A
+          git commit -m "portfolio: replace stale Beauty visuals with live production evidence [skip ci]"
           git push origin HEAD:portfolio/beauty-production-screenshot
