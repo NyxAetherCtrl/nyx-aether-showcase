@@ -1,0 +1,102 @@
+name: Capture full-page Beauty production screenshots
+
+on:
+  push:
+    branches:
+      - portfolio/beauty-fullpage-screenshots
+    paths:
+      - .github/workflows/beauty-fullpage.yml
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: portfolio/beauty-fullpage-screenshots
+
+      - name: Install Playwright
+        shell: bash
+        run: |
+          mkdir -p /tmp/pw
+          cd /tmp/pw
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 --no-audit --no-fund
+          ./node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Capture full production pages
+        shell: bash
+        run: |
+          node <<'NODE'
+          const { chromium } = require('/tmp/pw/node_modules/playwright');
+          const BASE = 'https://beauty-intelligence-seven.vercel.app';
+
+          async function gotoReady(page, path) {
+            const response = await page.goto(BASE + path, { waitUntil: 'networkidle', timeout: 90000 });
+            if (!response || !response.ok()) throw new Error(`Navigation failed for ${path}: ${response && response.status()}`);
+            await page.waitForTimeout(4000);
+            return page.locator('body').innerText();
+          }
+
+          function requireLabels(body, labels, path) {
+            for (const label of labels) if (!body.includes(label)) throw new Error(`Expected label '${label}' missing on ${path}`);
+          }
+
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const context = await browser.newContext({
+              viewport: { width: 1440, height: 1050 },
+              deviceScaleFactor: 1,
+              colorScheme: 'light',
+              userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36',
+            });
+
+            const brand = await context.newPage();
+            let body = await gotoReady(brand, '/?b=e.l.f.');
+            requireLabels(body, ['Brand Snapshot','Brand Health','Complaint Radar','Rating Trend','Price Positioning','Product Portfolio Map'], '/?b=e.l.f.');
+            await brand.screenshot({ path: 'assets/beauty/beauty-production-brand-snapshot.png', fullPage: true });
+            console.log('Brand full page height:', await brand.evaluate(() => document.documentElement.scrollHeight));
+            await brand.close();
+
+            const picker = await context.newPage();
+            body = await gotoReady(picker, '/products?b=e.l.f.');
+            requireLabels(body, ['Product Snapshot','tracked products','Select a product'], '/products?b=e.l.f.');
+            const firstHref = await picker.locator('.biv3-picker a[href*="p="]').first().getAttribute('href');
+            if (!firstHref) throw new Error('No populated product detail href found.');
+            const productUrl = new URL(firstHref, BASE);
+            const productKey = productUrl.searchParams.get('p');
+            if (!productKey) throw new Error('Resolved product href has no p query parameter.');
+            await picker.close();
+
+            const product = await context.newPage();
+            const productPath = productUrl.pathname + productUrl.search;
+            body = await gotoReady(product, productPath);
+            requireLabels(body, ['Product Snapshot','Product Health','Complaint Radar','Rating Trend','Review Momentum (30D)','Voices from Real Reviews'], productPath);
+            await product.screenshot({ path: 'assets/beauty/beauty-production-product-snapshot.png', fullPage: true });
+            console.log('Product full page height:', await product.evaluate(() => document.documentElement.scrollHeight));
+            await product.close();
+
+            const reviews = await context.newPage();
+            const reviewPath = `/reviews?b=${encodeURIComponent('e.l.f.')}&p=${encodeURIComponent(productKey)}`;
+            body = await gotoReady(reviews, reviewPath);
+            requireLabels(body, ['Review Explorer','Matching Reviews','Avg Rating','Positive / Negative Split','Related Issues','Search reviews'], reviewPath);
+            await reviews.screenshot({ path: 'assets/beauty/beauty-production-review-explorer.png', fullPage: true });
+            console.log('Reviews full page height:', await reviews.evaluate(() => document.documentElement.scrollHeight));
+            await reviews.close();
+
+            await browser.close();
+          })().catch(err => { console.error(err); process.exit(1); });
+          NODE
+
+      - name: Commit full-page screenshots and remove workflow
+        shell: bash
+        run: |
+          rm -f .github/workflows/beauty-fullpage.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "portfolio: use full-page Beauty production screenshots [skip ci]"
+          git push origin HEAD:portfolio/beauty-fullpage-screenshots
