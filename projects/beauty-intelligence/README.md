@@ -4,17 +4,25 @@
 
 [← Portfolio home](../../README.md) · [Live product](https://beauty-intelligence-seven.vercel.app)
 
-Beauty Intelligence is a production analytics product for turning noisy consumer reviews into structured, decision-ready intelligence for brands and product teams.
+Beauty Intelligence is a production analytics product that turns noisy consumer reviews into structured, decision-ready intelligence for brands and product teams.
 
-The central data-science problem is not “run sentiment analysis.” It is:
-
-> **How do you define a stable semantic system that can identify what consumers are talking about, distinguish praise from complaints and speculation from asserted experience, preserve evidence, aggregate it correctly, and validate it against human judgment?**
+The central DS question is not “can I run sentiment analysis?” It is: **how do I define stable semantic concepts, extract evidence correctly, build trustworthy denominators, create human ground truth, and translate unstructured language into business metrics without overstating quality?**
 
 ---
 
-## Recruiter summary
+## 30-second hiring scan
 
-This project demonstrates a different DS skill set from the Baseball forecasting system:
+**Best-fit roles:** Data Scientist · Product Data Scientist · NLP / Applied Data Scientist · Analytics Engineer · Consumer / Market Intelligence roles
+
+**Core skills demonstrated:**
+
+`Information Extraction` · `Multi-Label Concept Tagging` · `Taxonomy / Ontology Design` · `Negation & Context Handling` · `Human-in-the-Loop Evaluation` · `Stratified Sampling` · `Macro-F1` · `Span IoU` · `Time-Series Analytics` · `Metric / Denominator Design`
+
+**What makes it more than a dashboard:** the semantic engine is versioned, evaluated against blind human labels, persisted into an analytics-ready data layer, and served through production brand/product workflows with explicit low-sample and failure states.
+
+---
+
+## End-to-end DS workflow
 
 ```text
 retailer product + review data
@@ -27,18 +35,18 @@ offline semantic tagging
             ↓
 concept + evidence + sentiment + assertion
             ↓
-persisted mention layer
+persisted semantic layer
             ↓
-time-series / denominator rollups
+time-series + denominator rollups
             ↓
-brand + product intelligence
+brand / product intelligence
             ↓
 human-ground-truth evaluation + error analysis
             ↓
 production B2B analytics product
 ```
 
-The engine is designed so that analytics pages consume **persisted semantic evidence** rather than rerunning text interpretation on every request.
+The engine is designed so analytics pages consume **persisted semantic evidence** rather than rerunning text interpretation on every request.
 
 ---
 
@@ -46,66 +54,61 @@ The engine is designed so that analytics pages consume **persisted semantic evid
 
 | Area | Technique | How it is used |
 |---|---|---|
-| **NLP / Information Extraction** | Multi-label concept extraction | A review may express multiple benefits, complaints, usage experiences, or product attributes |
-| | Evidence-span extraction | Semantic outputs retain the supporting text span instead of returning only a label |
+| **NLP / Information Extraction** | Multi-label concept extraction | One review can express multiple benefits, complaints, product attributes, and usage experiences |
+| | Evidence-span extraction | Every semantic output can retain the text span that supports it |
 | | Phrase / context matching | Multi-word and contextual patterns reduce naive keyword matching |
-| | Negation handling | Distinguishes statements such as “not irritating” from “irritating” |
-| | Assertion state | Separates asserted experience from expectation, speculation, or other non-equivalent language |
-| | Sentiment classification | Concept mentions carry positive / negative semantic orientation where supported |
-| **Semantic Modeling** | Taxonomy / ontology design | Beauty language is mapped into stable concept and dimension definitions |
-| | Versioned concept schema | Engine/taxonomy identity is frozen so changes can be evaluated rather than silently redefining metrics |
-| | Domain-specific semantics | Cosmetic performance, feel, wear, application, irritation, pores, hydration and other domain meanings are handled explicitly |
+| | Negation handling | Separates “not irritating” from “irritating” |
+| | Assertion state | Distinguishes asserted experience from expectation or speculation |
+| | Sentiment classification | Concept-level positive / negative orientation where supported |
+| **Semantic Modeling** | Taxonomy / ontology design | Consumer language is mapped into stable concept + dimension definitions |
+| | Versioned concept schema | Semantic definitions are frozen so changes can be evaluated instead of silently redefining metrics |
+| | Domain-specific semantics | Beauty-specific meanings such as hydration, wear, irritation, pores, application, and texture are handled explicitly |
 | **Evaluation Design** | Human Ground Truth | Blind human labels are the authority for semantic-accuracy measurement |
-| | Blind Annotation | Annotators do not see engine predictions while labeling evidence |
-| | Stratified Sampling | Representative cohort is sampled proportionally across platform × rating |
-| | Challenge Sets | Hard linguistic cases are evaluated separately rather than mixed into the headline cohort |
-| | Span Alignment | Predicted and human mentions are matched by concept and evidence-span overlap |
-| | Intersection over Union | Mean IoU quantifies evidence-span quality |
-| | Exact-Match Evaluation | Exact span agreement is reported separately from overlap-based agreement |
-| | Macro-F1 | Sentiment / assertion quality is evaluated across classes, not only by majority-class accuracy |
-| | Confusion Matrices | Per-class failure modes are visible for semantic error analysis |
+| | Blind Annotation | Annotators do not see engine predictions while labeling |
+| | Stratified Sampling | Representative cohort sampled proportionally across platform × rating |
+| | Challenge Sets | Hard linguistic cases measured separately rather than mixed into the headline cohort |
+| | Span Alignment | Human and engine mentions matched by concept + evidence overlap |
+| | Intersection over Union | Measures evidence-span quality |
+| | Macro-F1 | Evaluates class quality without letting majority classes dominate |
+| | Confusion Matrices | Makes per-class failure modes visible |
 | | Strict End-to-End Metric | Requires concept + span + sentiment + assertion to all be correct |
-| **Cohort / Sampling** | Deterministic cohorts | Evaluation cohorts can be rebuilt identically from the same frozen sample |
-| | Representative vs challenge separation | Hard cases do not inflate or contaminate the representative accuracy estimate |
-| **Analytics Engineering** | Review-level denominators | Shares are defined against reviews, not raw mention counts, where the product claim is review-based |
+| **Analytics Engineering** | Review-level denominators | Product/brand shares use reviews rather than raw mention counts when the claim is review-based |
+| | Distinct-review counting | Repeated mentions do not silently multiply a reviewer’s weight |
 | | Support thresholds | Low-sample metrics surface as limited / unavailable rather than false precision |
-| | Distinct-review counting | Repeated mentions do not silently become repeated consumers/reviews |
-| | Typed availability states | Query failure, genuine no-data, and insufficient support remain distinct states |
-| **Time-Series Analytics** | Monthly concept rollups | Semantic mentions are aggregated into longitudinal brand/category/global series |
-| | Emerging-signal analysis | Recent concept movement can be compared against historical context |
-| | Dirty-window recomputation | Incremental updates rebuild only affected time windows instead of full history |
-| **Ranking / Decision Systems** | Complaint ranking | Complaint concepts are ranked from persisted evidence with explicit support requirements |
-| | Comparable-peer selection | Brand benchmark peers use deterministic eligibility and comparability rules |
-| | Product-family aggregation | Related variants are reconciled so product intelligence does not depend on one arbitrary SKU |
-| **Data Engineering** | Multi-source review ingestion | Retailer review sources are normalized into a common analytical layer |
-| | Incremental tagging | New/changed reviews can be processed without retagging the entire corpus |
-| | Idempotent writes / recovery | Retries and recovery paths are designed not to duplicate analytical state |
-| | Data-quality tests | Denominator, drift, read-failure and semantic-contract bugs become regression tests |
-| **Production Governance** | V2 / V3 side-by-side tables | New semantic outputs are isolated from the incumbent data path |
-| | Feature gating | V3 reads can be enabled only when explicitly authorized |
-| | Rollback boundaries | A new engine version can be disabled without mutating the prior engine’s tables |
+| | Typed availability states | Query failure, true zero, no-data, and low sample remain distinct |
+| **Time-Series Analytics** | Monthly concept rollups | Semantic signals aggregated into brand/category/global histories |
+| | Emerging-signal analysis | Recent movement compared with historical context |
+| | Dirty-window recomputation | Incremental updates rebuild only affected windows |
+| **Decision Systems** | Complaint ranking | Complaint concepts ranked from persisted evidence with minimum-support requirements |
+| | Comparable-peer selection | Benchmark peers chosen under deterministic eligibility/comparability rules |
+| | Product-family aggregation | Variants reconciled so analysis does not depend on one arbitrary SKU |
+| **Data Engineering** | Multi-source ingestion | Retailer reviews normalized into one analytical layer |
+| | Incremental tagging | New/changed reviews processed without recomputing the entire corpus |
+| | Idempotent recovery | Retries and recovery paths avoid duplicating analytical state |
+| | Regression testing | Denominator, drift, read-failure, and semantic-contract bugs become tests |
+| **Production Governance** | V2 / V3 side-by-side tables | Challenger semantic outputs isolated from incumbent data |
+| | Feature gating | New reads enabled only under explicit authorization |
+| | Rollback boundaries | New engine version can be disabled without rewriting the prior engine’s state |
 
 ---
 
-## Taxonomy engineering
+## Why taxonomy engineering is a DS problem
 
 Review analytics becomes unreliable when the semantic categories themselves drift.
 
-Beauty Intelligence therefore treats taxonomy as a versioned data-science artifact rather than a loose list of keywords.
+Beauty Intelligence therefore treats taxonomy as a **versioned feature-representation layer**, not a loose keyword list.
 
-A concept definition must answer questions such as:
+A concept definition must answer:
 
-- What consumer language should count as evidence?
-- What should **not** count despite containing the same word?
-- Is the statement positive, negative, neutral, speculative, or negated?
-- Does the evidence refer to product performance, expectation, comparison, or some unrelated sense?
-- Can the same rule be applied consistently across retailers and time periods?
+- What language counts as evidence?
+- What should not count even if the same word appears?
+- Is the statement positive, negative, neutral, negated, expected, or speculative?
+- Is the phrase about product performance or a different word sense?
+- Can the same rule be applied consistently across retailers and time?
 
-The engine uses a structured concept layer so downstream analytics can compare brands/products using stable semantic definitions.
+Downstream complaint rates, product strengths, trend charts, and brand comparisons are only as trustworthy as this text-to-concept representation.
 
-### Why this is a Data Science skill
-
-This is **feature representation for unstructured data**. The quality of downstream complaint rates, product strengths, trend charts, and brand comparisons depends on whether the text-to-concept mapping has a defensible definition.
+This demonstrates **feature representation for unstructured data, domain modeling, semantic consistency, and ontology governance**.
 
 ---
 
@@ -113,21 +116,21 @@ This is **feature representation for unstructured data**. The quality of downstr
 
 A major design rule is:
 
-> **An AI/model judging another semantic engine is not human ground truth.**
+> **An AI/model judging another semantic engine is not final human ground truth.**
 
-The tracked evaluation harness freezes a real-review sample and builds a blind annotation workflow. Real review text and labels remain outside the public/source-controlled evaluation code; the annotation tooling, cohort logic, evaluator, taxonomy snapshot, and labeling guide are versioned.
+The evaluation harness freezes a real-review sample and builds a blind annotation workflow. Predictions are hidden from annotators; cohort logic, evaluator behavior, taxonomy snapshot, annotation guide, and evaluation identity are versioned.
 
 ### Evaluation pipeline
 
 ```text
-frozen 440-review sample
+frozen real-review sample
           ↓
 deterministic cohort construction
           ↓
 representative cohort + challenge cohort
           ↓
-blind annotation batches
-(predictions hidden from annotator)
+blind annotation
+(predictions hidden)
           ↓
 human evidence / concept / sentiment / assertion labels
           ↓
@@ -138,34 +141,34 @@ concept + span + sentiment + assertion metrics
 error slices + adjudication
 ```
 
-### Two evaluation cohorts
+### Representative vs challenge cohorts
 
 **Representative cohort**  
-A proportional stratified sample across platform × rating. This is the cohort eligible to support a general real-accuracy estimate once human annotation is complete.
+Proportional stratified sample across platform × rating. This is the cohort intended to support a population-style accuracy estimate once labeling is complete.
 
 **Challenge cohort**  
-Targeted difficult language — for example negation, failed mitigation, expectation/speculation, matcher traps, acne/fragrance ambiguity, and star/text disagreement. Challenge metrics are reported by slice and are **not folded into the headline representative result**.
+Targeted difficult language: negation, expectation/speculation, failed mitigation, matcher traps, ambiguous concepts, and star/text disagreement. These are reported as diagnostic slices rather than folded into the representative headline.
 
-This separation avoids an easy but common evaluation mistake: deliberately enriching the test set with difficult cases and then presenting that score as population accuracy.
+This is an important evaluation distinction: **diagnostic difficulty and population representativeness answer different questions**.
 
 ---
 
 ## Evaluation metrics
 
-The evaluator does not reduce semantic quality to one accuracy number.
+The evaluator does not collapse semantic quality into a single accuracy value.
 
 ### Concept detection
 
 - mention-level overlap match;
-- mention-level exact match;
-- review-level set agreement.
+- exact match;
+- review-level concept-set agreement.
 
 ### Evidence quality
 
 - exact span rate;
 - mean **Intersection over Union (IoU)** between human and engine evidence spans.
 
-### Sentiment & assertion
+### Sentiment / assertion
 
 - accuracy;
 - macro-F1;
@@ -174,29 +177,27 @@ The evaluator does not reduce semantic quality to one accuracy number.
 
 ### Strict end-to-end correctness
 
-A prediction counts as fully correct only when **concept + evidence span + sentiment + assertion** align under the strict policy.
+A prediction counts as fully correct only when **concept + evidence span + sentiment + assertion** all align.
 
 ### Error analysis
 
-Metrics are sliced by challenge tag / linguistic failure mode rather than relying only on an aggregate score.
+Performance can be sliced by linguistic failure mode instead of relying only on an aggregate score.
 
 ---
 
 ## Important evaluation disclosure
 
-The evaluation infrastructure is production-grade, but the portfolio does **not** claim human-validated semantic accuracy before the blind annotation program establishes it.
+The portfolio does **not** claim human-validated semantic accuracy before the blind annotation program establishes it.
 
-That distinction is intentional. A system can have excellent engineering, complete corpus coverage, and useful product outputs while its semantic precision still requires independent human measurement.
+That restraint is intentional. Engineering quality, corpus coverage, and product usefulness do not automatically prove semantic precision.
 
-Skills demonstrated here include **evaluation design, annotation protocol design, metric design, error taxonomy, and scientific restraint** — not a fabricated accuracy number.
+Skills demonstrated here include **evaluation design, annotation protocol design, cohort construction, metric design, error taxonomy, and scientific restraint**.
 
 ---
 
 ## Persisted semantic layer
 
-The product does not parse hundreds of thousands of reviews from scratch on every request.
-
-Instead:
+The product does not parse the entire review corpus on every dashboard request.
 
 ```text
 review
@@ -207,116 +208,72 @@ concept mention
   ├─ concept identity
   ├─ evidence span
   ├─ sentiment
-  └─ assertion/context
+  └─ assertion / context
   ↓
 persisted semantic tables
   ↓
-brand / product / category / time-series queries
+brand / product / category / time-series analytics
 ```
 
-This turns NLP output into an **analytics-ready semantic data layer**.
-
-Benefits:
+This turns NLP output into an **analytics-ready semantic layer** with:
 
 - deterministic downstream queries;
-- faster serving;
 - auditable evidence;
 - reproducible historical metrics;
-- version-to-version comparison;
-- ability to repair semantic logic offline without changing every UI query.
+- version-to-version comparisons;
+- fast production serving;
+- offline repairability.
 
 ---
 
 ## V2 → V3 engine evaluation
 
-Review Intelligence V3 was designed as a side-by-side system rather than an in-place rewrite.
+Review Intelligence V3 was built side-by-side rather than as an in-place rewrite.
 
-The V3 migration creates separate semantic tables while leaving V2 untouched. Readers are feature-gated, and the engine can be evaluated before production reads are redirected.
+The correct framing is:
 
-This is best described as:
+**Versioned Engine Evaluation · Shadow Rollout · Side-by-Side Validation**
 
-**Versioned Engine Evaluation / Shadow Rollout / Side-by-Side Validation**
-
-—not as an A/B test, because users are not randomly assigned to competing semantic treatments.
+—not A/B testing, because users are not randomly assigned to semantic treatments.
 
 This architecture demonstrates:
 
 - challenger isolation;
 - backward compatibility;
-- rollback design;
 - schema versioning;
+- feature gating;
+- rollback design;
 - evaluation before promotion.
 
 ---
 
-## Denominator design — an underrated DS problem
+## Denominator design — a core analytics skill
 
-Consumer analytics can look mathematically precise while answering the wrong question.
-
-Example:
+A metric can look mathematically precise while answering the wrong business question.
 
 ```text
 complaint mentions / all mentions       ≠       reviews with complaint / eligible reviews
 ```
 
-A verbose reviewer can produce many mentions. If a product metric is supposed to represent review-level prevalence, raw mention counts are the wrong denominator.
+One verbose review can contain many mentions. If the product claim is review-level prevalence, raw mention counts are the wrong denominator.
 
-The system therefore has explicit tests ensuring review-based denominators do not silently derive from mention volume. Similar rules distinguish:
+The system therefore distinguishes:
 
 - all collected reviews;
 - rated reviews;
 - reviews with semantic support;
 - distinct platform + review identities;
-- low-sample vs unavailable states.
+- low sample;
+- true no-data;
+- read/query failure.
 
 This is **metric semantics / analytics engineering**, and it is central to making the B2B product trustworthy.
 
 ---
 
-## Complaint Intelligence
+## Business-facing analytical systems
 
-The Complaint Evidence Engine ranks complaint concepts from **pre-tagged persisted data**. It does not rerun NLP during every dashboard request.
-
-That design separates:
-
-1. semantic interpretation;
-2. analytical aggregation;
-3. product presentation.
-
-A complaint can therefore be traced back to supporting review evidence while the ranking layer remains deterministic and fast.
-
-Skills demonstrated: **ranking logic, evidence-based analytics, semantic aggregation, explainable data products**.
-
----
-
-## Peer benchmarking
-
-Brand comparisons use deterministic peer-eligibility rules rather than simply displaying any famous competitor.
-
-Comparable peers consider data availability and minimum support before ranking. Missing metrics carry typed reasons so a failed read is not displayed as a real zero.
-
-This is a useful example of **business-facing model/metric governance**: selecting a benchmark cohort is itself an analytical decision.
-
----
-
-## Data collection & quality engineering
-
-The project also includes production review-collection pipelines. Real failures shaped the architecture:
-
-- failed retailer fetches are not marked as successful checkpoints;
-- retries use bounded backoff and explicit failure classes;
-- partial data can be retained while the failed identity remains retryable;
-- zero reviews must be explicitly verified rather than inferred from a network failure;
-- recovery runs are isolated and idempotent;
-- product-family identity is reconciled so variants can share review intelligence correctly.
-
-This is relevant to Data Science because the semantic engine cannot be more trustworthy than the corpus feeding it.
-
----
-
-## Product surfaces
-
-Beauty Intelligence translates the semantic/data layer into business-facing workflows such as:
+Beauty Intelligence translates semantic evidence into workflows including:
 
 - Brand Intelligence;
 - Product Intelligence;
@@ -325,14 +282,55 @@ Beauty Intelligence translates the semantic/data layer into business-facing work
 - review evidence exploration;
 - top concepts by brand/product;
 - peer benchmarking;
-- emerging trend / concept context;
+- emerging-signal / trend context;
 - product and category comparisons.
 
-The product distinguishes **real empty**, **insufficient support**, and **read failure** rather than collapsing all three into `0` or `—`.
+Two particularly useful DS examples:
+
+### Complaint ranking
+
+Complaint concepts are ranked from **pre-tagged persisted evidence** rather than rerunning NLP during each page request. This cleanly separates semantic interpretation, aggregation, and presentation.
+
+### Peer benchmarking
+
+Peers are chosen through deterministic eligibility and comparability rules. Missing data carries typed reasons so a failed read cannot appear as a real zero.
+
+These demonstrate **ranking logic, cohort definition, business metric governance, and explainable analytical products**.
 
 ---
 
-## Interview-ready skill summary
+## Data collection & quality engineering
+
+The semantic engine cannot be more trustworthy than the corpus feeding it.
+
+Production collection logic therefore includes:
+
+- explicit failure classes;
+- bounded retry/backoff;
+- failed identities remaining retryable instead of being marked complete;
+- verified-zero logic rather than inferring zero from network failure;
+- idempotent recovery runs;
+- product-family identity reconciliation;
+- regression tests built from real failure modes.
+
+This connects **data quality engineering directly to downstream DS validity**.
+
+---
+
+## Interview-ready talking points
+
+1. Why generic sentiment analysis was insufficient for product/manufacturing intelligence.
+2. How taxonomy design becomes a feature-representation problem.
+3. Why blind human annotation is required for defensible semantic evaluation.
+4. Why representative and challenge cohorts must be reported separately.
+5. Why evidence-span IoU matters when the system claims explainable evidence.
+6. How the wrong denominator can damage business decisions even when the classifier is reasonable.
+7. Why V3 was deployed side-by-side with V2 instead of rewriting production tables.
+8. How “no signal,” “low sample,” and “query failed” are preserved as different analytical states.
+
+---
+
+## Skills summary
 
 **NLP / Semantic DS:** Information Extraction · Multi-Label Concept Extraction · Taxonomy / Ontology Design · Negation Handling · Context Disambiguation · Sentiment Analysis · Assertion Classification · Evidence Extraction
 
@@ -343,18 +341,5 @@ The product distinguishes **real empty**, **insufficient support**, and **read f
 **Data Engineering:** Python · SQL · PostgreSQL / Supabase · Incremental ETL · Idempotency · Data Quality Testing · Multi-Source Ingestion · Recovery Pipelines · Data Lineage
 
 **Production:** Engine Versioning · Feature Gating · Side-by-Side Validation · Rollback Design · Next.js · TypeScript · Vercel · CI/CD
-
----
-
-## What I would discuss in an interview
-
-1. **Why “sentiment analysis” alone was not sufficient** for product/manufacturing intelligence.
-2. **How taxonomy design becomes a modeling problem** when real beauty language is ambiguous.
-3. **Why human ground truth must be blind** and why an LLM-as-judge is not treated as final semantic authority.
-4. **How representative and challenge cohorts answer different questions.**
-5. **Why span IoU matters** when a system claims evidence, not only labels.
-6. **How incorrect denominators can create more damage than an imperfect classifier.**
-7. **Why V3 was built side-by-side with V2** instead of replacing production tables in place.
-8. **How production read failures are kept distinct from true analytical zeroes.**
 
 The full production source remains private. This public case study documents the DS methodology and product reasoning without publishing the complete semantic engine, proprietary review corpus, internal operational files, or production credentials.
