@@ -10,12 +10,12 @@ The full production repositories remain private. This public repository is the h
 
 ## Product previews
 
-These are shipped product surfaces, not mockups. The technical case studies below explain the data and evaluation systems behind them.
+These are current shipped product surfaces captured from the live products, not mockups. The technical case studies below explain the data and evaluation systems behind them.
 
 | NYX Aether — Baseball Intelligence | Beauty Intelligence |
 |---|---|
-| ![NYX Aether Overview](assets/screenshots/overview.png) | ![Beauty Intelligence Terminal](assets/beauty/beauty-home.png) |
-| Live MLB slate, model context, and game intelligence | Consumer-review intelligence organized into business-facing modules |
+| ![NYX Aether Overview](assets/screenshots/overview.png) | ![Beauty Intelligence — Production Brand Snapshot](assets/beauty/beauty-production-brand-snapshot.png) |
+| Live MLB slate, model context, and game intelligence | Current production Brand Snapshot: brand health, complaint, rating, pricing, and portfolio signals |
 
 ## 30-second recruiter scan
 
@@ -161,9 +161,9 @@ The strongest story is not a headline accuracy number. It is the decision to **w
 
 That demonstrates a different DS skill from Baseball: defining what should count, designing ground truth, protecting denominators, and translating noisy language into business metrics without collapsing query failure, low sample size, and true zero into the same value.
 
-![Beauty Intelligence — Brand Intelligence](assets/beauty/beauty-brand.png)
+![Beauty Intelligence — Production Brand Snapshot](assets/beauty/beauty-production-brand-snapshot.png)
 
-*Brand Intelligence connects review volume, benefits, complaints, emerging signals, and market context in one decision surface.*
+*The current production Brand Snapshot combines review coverage, brand health, complaint incidence, rating distribution, price positioning, and portfolio-level signals in one decision surface.*
 
 ---
 
