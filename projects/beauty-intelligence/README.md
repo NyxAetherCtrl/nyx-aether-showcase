@@ -26,23 +26,23 @@ The central DS question is not “can I run sentiment analysis?” It is: **how 
 
 These screenshots were captured from the **live production product**, not from the older screenshot folder in the private source repository.
 
-**Viewing tip:** The inline images are compact previews. Click any screenshot to open the complete full-page production capture.
+**Viewing:** Each Beauty screenshot below is the complete full-page production capture shown inline — no crop or thumbnail preview.
 
 ### Production Brand Snapshot
 
-[![Beauty Intelligence — Production Brand Snapshot](../../assets/beauty/beauty-production-brand-preview.png)](https://raw.githubusercontent.com/NyxAetherCtrl/nyx-aether-showcase/main/assets/beauty/beauty-production-brand-snapshot.png)
+[![Beauty Intelligence — Production Brand Snapshot](../../assets/beauty/beauty-production-brand-snapshot.png)](https://raw.githubusercontent.com/NyxAetherCtrl/nyx-aether-showcase/main/assets/beauty/beauty-production-brand-snapshot.png)
 
 *The current production Brand Snapshot brings review coverage, retailer mix, brand health, complaint incidence, rating distribution, price positioning, and product-portfolio signals into one decision surface.*
 
 ### Product Snapshot
 
-[![Beauty Intelligence — Production Product Snapshot](../../assets/beauty/beauty-production-product-preview.png)](https://raw.githubusercontent.com/NyxAetherCtrl/nyx-aether-showcase/main/assets/beauty/beauty-production-product-snapshot.png)
+[![Beauty Intelligence — Production Product Snapshot](../../assets/beauty/beauty-production-product-snapshot.png)](https://raw.githubusercontent.com/NyxAetherCtrl/nyx-aether-showcase/main/assets/beauty/beauty-production-product-snapshot.png)
 
 *Product-level analysis carries the same evidence model into product health, complaint radar, retailer coverage, rating trends, review momentum, and real-review voices.*
 
 ### Review Explorer
 
-[![Beauty Intelligence — Production Review Explorer](../../assets/beauty/beauty-production-review-preview.png)](https://raw.githubusercontent.com/NyxAetherCtrl/nyx-aether-showcase/main/assets/beauty/beauty-production-review-explorer.png)
+[![Beauty Intelligence — Production Review Explorer](../../assets/beauty/beauty-production-review-explorer.png)](https://raw.githubusercontent.com/NyxAetherCtrl/nyx-aether-showcase/main/assets/beauty/beauty-production-review-explorer.png)
 
 *The Review Explorer links summary metrics back to filterable review evidence, related issues, retailer/rating facets, and searchable consumer language.*
 
