@@ -14,7 +14,7 @@ These are current shipped product surfaces captured from the live products, not 
 
 | NYX Aether — Baseball Intelligence | Beauty Intelligence |
 |---|---|
-| ![NYX Aether Overview](assets/screenshots/overview.png) | [![Beauty Intelligence — Production Brand Snapshot](assets/beauty/beauty-production-brand-snapshot.png)](https://raw.githubusercontent.com/NyxAetherCtrl/nyx-aether-showcase/main/assets/beauty/beauty-production-brand-snapshot.png) |
+| ![NYX Aether Overview](assets/screenshots/overview.png) | [![Beauty Intelligence — Production Brand Snapshot](assets/beauty/beauty-production-brand-snapshot.png)](https://raw.githubusercontent.com/NyxAetherCtrl/samuel-choi-data-science-portfolio/main/assets/beauty/beauty-production-brand-snapshot.png) |
 | Live MLB slate, model context, and game intelligence | Current production Brand Snapshot: brand health, complaint, rating, pricing, and portfolio signals |
 
 ## 30-second recruiter scan
@@ -161,7 +161,7 @@ The strongest story is not a headline accuracy number. It is the decision to **w
 
 That demonstrates a different DS skill from Baseball: defining what should count, designing ground truth, protecting denominators, and translating noisy language into business metrics without collapsing query failure, low sample size, and true zero into the same value.
 
-[![Beauty Intelligence — Production Brand Snapshot](assets/beauty/beauty-production-brand-snapshot.png)](https://raw.githubusercontent.com/NyxAetherCtrl/nyx-aether-showcase/main/assets/beauty/beauty-production-brand-snapshot.png)
+[![Beauty Intelligence — Production Brand Snapshot](assets/beauty/beauty-production-brand-snapshot.png)](https://raw.githubusercontent.com/NyxAetherCtrl/samuel-choi-data-science-portfolio/main/assets/beauty/beauty-production-brand-snapshot.png)
 
 *The current production Brand Snapshot combines review coverage, brand health, complaint incidence, rating distribution, price positioning, and portfolio-level signals in one decision surface. The complete production page is shown inline.*
 
